@@ -1,0 +1,16 @@
+{
+  "id": "issue-tes1t1",
+  "title": "api t1est1",
+  "description": "issue api t1est1",
+  "confidential": null,
+  "labels": null,
+  "issue_iid": 16,
+  "assignee_ids": [
+    2
+  ],
+  "milestone_id": null,
+  "created_at": null,
+  "due_date": "2017-12-16",
+  "merge_request_to_resolve_discussions_of": null,
+  "discussion_to_resolve": null
+}

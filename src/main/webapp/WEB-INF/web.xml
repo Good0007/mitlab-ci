@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         id="WebApp_ID" version="3.0">
+    <display-name>portal_web</display-name>
+    <servlet>
+        <servlet-name>zboxServlet</servlet-name>
+        <servlet-class>com.mitlab.ci.ZboxServlet</servlet-class>
+        <init-param>
+            <param-name>zboxUser</param-name>
+            <param-value>admin</param-value>
+        </init-param>
+        <init-param>
+            <param-name>zboxPassword</param-name>
+            <param-value>Passw0rd</param-value>
+        </init-param>
+        <init-param>
+            <param-name>gitlabToken</param-name>
+            <param-value>kHAgtXNnTjnDQPjYyUed</param-value>
+        </init-param>
+        <init-param>
+            <param-name>ddd</param-name>
+            <param-value>mitlab/mitlab-workflow</param-value>
+        </init-param>
+        <init-param>
+            <param-name>OOP项目</param-name>
+            <param-value>mitlab/OOP</param-value>
+        </init-param>
+
+        <!-- zbox action to gitlab issue action-->
+        <init-param>
+            <param-name>zboxAction:canceled</param-name>
+            <param-value>close</param-value>
+        </init-param>
+        <init-param>
+            <param-name>zboxAction:activated</param-name>
+            <param-value>reopen</param-value>
+        </init-param>
+        <init-param>
+            <param-name>zboxAction:finished</param-name>
+            <param-value>close</param-value>
+        </init-param>
+        <init-param>
+            <param-name>zboxAction:resolved</param-name>
+            <param-value>close</param-value>
+        </init-param>
+        <init-param>
+            <param-name>zboxAction:closed</param-name>
+            <param-value>close</param-value>
+        </init-param>
+        <init-param>
+            <param-name>zboxAction:opened</param-name>
+            <param-value></param-value>
+        </init-param>
+
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>zboxServlet</servlet-name>
+        <url-pattern>/zbox.do</url-pattern>
+    </servlet-mapping>
+
+</web-app>

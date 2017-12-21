@@ -8,59 +8,74 @@
         <servlet-name>zboxServlet</servlet-name>
         <servlet-class>com.mitlab.ci.ZboxServlet</servlet-class>
         <init-param>
+            <param-name>zboxReloginTime</param-name>
+            <param-value>7200</param-value>
+        </init-param>
+        <init-param>
             <param-name>zboxUrl</param-name>
-            <param-value><![CDATA[禅道地址]]></param-value>
+            <param-value><![CDATA[http://127.0.0.1/zentao]]></param-value>
         </init-param>
         <init-param>
             <param-name>gitlabUrl</param-name>
-            <param-value><![CDATA[GITLAB地址]]></param-value>
+            <param-value><![CDATA[http://127.0.0.1:7080]]></param-value>
         </init-param>
         <init-param>
             <param-name>zboxUser</param-name>
-            <param-value>禅道帐号</param-value>
+            <param-value>admin</param-value>
         </init-param>
         <init-param>
             <param-name>zboxPassword</param-name>
-            <param-value>禅道密码</param-value>
+            <param-value>YWRtaW4=</param-value>
         </init-param>
         <init-param>
             <param-name>gitlabToken</param-name>
-            <param-value>GITLAB token</param-value>
+            <param-value>TVqLvL6P7bCuF27-N57W</param-value>
         </init-param>
         <init-param>
-            <param-name>禅道工程</param-name>
-            <param-value>GITLAB工程[组/工程]</param-value>
+            <param-name>MWF</param-name>
+            <param-value>mitlab/MWF</param-value>
         </init-param>
+
+
+
 
         <!-- zbox action to gitlab issue action-->
         <init-param>
-            <param-name>zboxAction:canceled</param-name>
-            <param-value>close</param-value>
+            <param-name>zboxAction:opened</param-name>
+            <param-value>,todo</param-value>
         </init-param>
         <init-param>
-            <param-name>zboxAction:activated</param-name>
-            <param-value>reopen</param-value>
+            <param-name>zboxAction:started</param-name>
+            <param-value>reopen,doing</param-value>
         </init-param>
-        <!--
+        <init-param>
+            <param-name>zboxAction:paused</param-name>
+            <param-value>reopen,</param-value>
+        </init-param>
+        <init-param>
+            <param-name>zboxAction:restarted</param-name>
+            <param-value>reopen,doing</param-value>
+        </init-param>
         <init-param>
             <param-name>zboxAction:finished</param-name>
-            <param-value>close</param-value>
+            <param-value>,done</param-value>
         </init-param>
         <init-param>
             <param-name>zboxAction:resolved</param-name>
-            <param-value>close</param-value>
+            <param-value>,done</param-value>
         </init-param>
-        -->
+        <init-param>
+            <param-name>zboxAction:canceled</param-name>
+            <param-value>,done</param-value>
+        </init-param>
+        <init-param>
+            <param-name>zboxAction:activated</param-name>
+            <param-value>reopen,</param-value>
+        </init-param>
         <init-param>
             <param-name>zboxAction:closed</param-name>
-            <param-value>close</param-value>
+            <param-value>close,</param-value>
         </init-param>
-        <!--
-        <init-param>
-            <param-name>zboxAction:opened</param-name>
-            <param-value></param-value>
-        </init-param>
-        -->
         <load-on-startup>2</load-on-startup>
     </servlet>
     <servlet-mapping>

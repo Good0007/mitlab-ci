@@ -35,6 +35,8 @@ public class ZboxServlet extends HttpServlet {
     private volatile ZboxSession session;
     private CacheManager manager = CacheManager.newInstance();
     private JdbcConnectionPool h2Pool;
+    private long zboxReloginTime;
+    private long zboxLastAccessTime;
 
     @Override
     public void destroy() {
@@ -78,10 +80,12 @@ public class ZboxServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
+        zboxReloginTime = Long.parseLong(this.getInitParameter("zboxReloginTime")) * 1000;
         ZboxUtil.getInstance().setAccessUrl(this.getInitParameter("zboxUrl"));
         GitlabUtil.getInstance().setAccessUrl(this.getInitParameter("gitlabUrl"));
         this.session = ZboxUtil.getInstance().getZboxSession();
         ZboxUtil.getInstance().login(getInitParameter("zboxUser"), getInitParameter("zboxPassword"), session);
+        zboxLastAccessTime = System.currentTimeMillis();
         Ehcache cache = manager.getEhcache("issueCache");
         cache.put(new Element("zboxSession", this.session));
         if (logger.isLoggable(Level.INFO)) {
@@ -113,6 +117,29 @@ public class ZboxServlet extends HttpServlet {
             ZboxNotify notify = ZboxUtil.newObjectMapper().readValue(data, 0, len, ZboxNotify.class);
             if (logger.isLoggable(Level.INFO)) {
                 logger.info("zbox notify:" + notify);
+            }
+            if (System.currentTimeMillis() - zboxReloginTime > zboxLastAccessTime) {
+                if (logger.isLoggable(Level.INFO)) {
+                    logger.info("logout zbox for session[" + this.session + "]");
+                }
+                ZboxUtil.getInstance().logout(session);
+                this.session = ZboxUtil.getInstance().getZboxSession();
+                if (logger.isLoggable(Level.INFO)) {
+                    logger.info("new zbox session[" + this.session + "]");
+                }
+                ZboxUtil.getInstance().login(getInitParameter("zboxUser"), getInitParameter("zboxPassword"), session);
+                if (logger.isLoggable(Level.INFO)) {
+                    logger.info("logout zbox for session[" + this.session + "]");
+                }
+                zboxLastAccessTime = System.currentTimeMillis();
+                if (logger.isLoggable(Level.INFO)) {
+                    logger.info(this.session.toString());
+                }
+            } else {
+                if (logger.isLoggable(Level.INFO)) {
+                    logger.info("refresh zbox alive time for session[" + this.session + "]");
+                    zboxLastAccessTime = System.currentTimeMillis();
+                }
             }
             if ("task".equals(notify.getObjectType())) {
                 onTaskReceive(notify);
@@ -194,10 +221,13 @@ public class ZboxServlet extends HttpServlet {
     private void setIssueStatus(ZboxNotify notify, IssueRequest issueRequest) {
         String gitlabAction = this.getInitParameter("zboxAction:" + notify.getAction());
         if (gitlabAction != null && !"".equals(gitlabAction.trim())) {
-            if (!("close".equals(gitlabAction) || "reopen".equals(gitlabAction))) {
-                return;
+            String[] statusLabelArray = gitlabAction.split(",");
+            if (!"".equals(statusLabelArray[0])) {
+                issueRequest.setStateEvent(statusLabelArray[0]);
             }
-            issueRequest.setStateEvent(gitlabAction);
+            if (statusLabelArray.length > 1 && !"".equals(statusLabelArray[1])) {
+                issueRequest.setLabels(statusLabelArray[1]);
+            }
         }
     }
 

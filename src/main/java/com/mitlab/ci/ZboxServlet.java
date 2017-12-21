@@ -78,6 +78,8 @@ public class ZboxServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
+        ZboxUtil.getInstance().setAccessUrl(this.getInitParameter("zboxUrl"));
+        GitlabUtil.getInstance().setAccessUrl(this.getInitParameter("gitlabUrl"));
         this.session = ZboxUtil.getInstance().getZboxSession();
         ZboxUtil.getInstance().login(getInitParameter("zboxUser"), getInitParameter("zboxPassword"), session);
         Ehcache cache = manager.getEhcache("issueCache");

@@ -27,9 +27,13 @@ import java.util.logging.Logger;
 
 public class AbstractMitlabUtil {
     private final Logger logger = Logger.getLogger(this.getClass().getName());
-    private final String accessUrl;
+    private String accessUrl;
 
     protected AbstractMitlabUtil(String accessUrl) {
+        this.accessUrl = accessUrl;
+    }
+
+    public void setAccessUrl(String accessUrl) {
         this.accessUrl = accessUrl;
     }
 

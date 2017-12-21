@@ -8,24 +8,28 @@
         <servlet-name>zboxServlet</servlet-name>
         <servlet-class>com.mitlab.ci.ZboxServlet</servlet-class>
         <init-param>
+            <param-name>zboxUrl</param-name>
+            <param-value><![CDATA[禅道地址]]></param-value>
+        </init-param>
+        <init-param>
+            <param-name>gitlabUrl</param-name>
+            <param-value><![CDATA[GITLAB地址]]></param-value>
+        </init-param>
+        <init-param>
             <param-name>zboxUser</param-name>
-            <param-value>admin</param-value>
+            <param-value>禅道帐号</param-value>
         </init-param>
         <init-param>
             <param-name>zboxPassword</param-name>
-            <param-value>Passw0rd</param-value>
+            <param-value>禅道密码</param-value>
         </init-param>
         <init-param>
             <param-name>gitlabToken</param-name>
-            <param-value>kHAgtXNnTjnDQPjYyUed</param-value>
+            <param-value>GITLAB token</param-value>
         </init-param>
         <init-param>
-            <param-name>ddd</param-name>
-            <param-value>mitlab/mitlab-workflow</param-value>
-        </init-param>
-        <init-param>
-            <param-name>OOP项目</param-name>
-            <param-value>mitlab/OOP</param-value>
+            <param-name>禅道工程</param-name>
+            <param-value>GITLAB工程[组/工程]</param-value>
         </init-param>
 
         <!-- zbox action to gitlab issue action-->
@@ -37,6 +41,7 @@
             <param-name>zboxAction:activated</param-name>
             <param-value>reopen</param-value>
         </init-param>
+        <!--
         <init-param>
             <param-name>zboxAction:finished</param-name>
             <param-value>close</param-value>
@@ -45,15 +50,17 @@
             <param-name>zboxAction:resolved</param-name>
             <param-value>close</param-value>
         </init-param>
+        -->
         <init-param>
             <param-name>zboxAction:closed</param-name>
             <param-value>close</param-value>
         </init-param>
+        <!--
         <init-param>
             <param-name>zboxAction:opened</param-name>
             <param-value></param-value>
         </init-param>
-
+        -->
         <load-on-startup>2</load-on-startup>
     </servlet>
     <servlet-mapping>

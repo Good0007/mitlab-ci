@@ -32,16 +32,20 @@ public class Test {
         final JsonNode good = Utils.loadResource("/fstab-good.json");
         final JsonNode bad = Utils.loadResource("/fstab-bad.json");
         final JsonNode bad2 = Utils.loadResource("/fstab-bad2.json");
+        final JsonNode projects = Utils.loadResource("/project.json");
 
         ProcessingReport report;
 
-        report = schema.validate(good);
+        /*report = schema.validate(good);
         System.out.println(report);
 
         report = schema.validate(bad);
         System.out.println(report);
 
         report = schema.validate(bad2);
+        System.out.println(report);*/
+        
+        report = schema.validate(projects);
         System.out.println(report);
     }
 }

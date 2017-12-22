@@ -1,11 +1,14 @@
 package com.mitlab.ci.zbox;
 
+import com.mitlab.ci.manager.SettingEntity;
+
 public class ZboxSession {
     private String title;
     private String zentaosid;
     private String sessionID;
     private String sessionName;
     private int rand;
+    private SettingEntity settingInfo;
 
     public String getSessionName() {
         return sessionName;
@@ -57,15 +60,20 @@ public class ZboxSession {
 
     private String pager;
 
-    @Override
-    public String toString() {
-        return "ZboxSession{" +
-                "title='" + title + '\'' +
-                ", zentaosid='" + zentaosid + '\'' +
-                ", sessionID='" + sessionID + '\'' +
-                ", sessionName='" + sessionName + '\'' +
-                ", rand=" + rand +
-                ", pager='" + pager + '\'' +
-                '}';
-    }
+
+	public SettingEntity getSettingInfo() {
+		return settingInfo;
+	}
+
+	public void setSettingInfo(SettingEntity settingInfo) {
+		this.settingInfo = settingInfo;
+	}
+
+	@Override
+	public String toString() {
+		return "ZboxSession [title=" + title + ", zentaosid=" + zentaosid + ", sessionID=" + sessionID
+				+ ", sessionName=" + sessionName + ", rand=" + rand + ", settingInfo=" + settingInfo + ", pager="
+				+ pager + "]";
+	}
+	
 }

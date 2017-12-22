@@ -1,20 +1,19 @@
 package com.mitlab.ci.gitlab;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.codehaus.jackson.map.ObjectMapper;
+
 import com.mitlab.ci.AbstractMitlabUtil;
 import com.mitlab.ci.gitlab.issue.IssueRequest;
 import com.mitlab.ci.gitlab.issue.IssueResponse;
 import com.mitlab.ci.gitlab.user.GitlabUser;
 import com.mitlab.ci.zbox.ZboxException;
-import org.codehaus.jackson.map.ObjectMapper;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 public final class GitlabUtil extends AbstractMitlabUtil {
     private static final GitlabUtil GITLAB_UTIL = new GitlabUtil("http://192.168.60.50:27080/gitlab");

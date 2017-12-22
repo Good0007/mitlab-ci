@@ -1,0 +1,89 @@
+body{
+			margin:0;
+			padding:0;
+		}
+		h1{
+			font-size: 22px;
+			text-align: center;
+			padding:10px 0 ;
+			margin:0;
+			margin-bottom:10px;
+			border-bottom:1px solid #ccc;
+		}
+		#main{
+			margin-top:58px;
+		}
+		.setFree{
+			background: #fafafa;
+			border-radius:5px;
+			padding:5px;
+		}
+		.setDisk{
+			background: #fafafa;
+			border-radius:5px;
+			padding:5px;
+		}
+		
+		.col-md-6 .text,.col-md-12 .text{
+			font-size: 12px;
+			text-align: center;
+		}
+		.col-md-6 .text .point{
+			background:rgb(124, 181, 236);
+			padding:5px;
+			display:inline-block;
+			width:2px;
+			height:2px;
+			border-radius:5px;
+			margin-right: 3px;			
+		}
+		
+		.text  span.n_point1{
+			background:rgb(124, 181, 236);
+			padding:5px;
+			display:inline-block;
+			width:2px;
+			height:2px;
+			border-radius:5px;
+			margin-right: 3px;			
+		}
+		.text  span.n_point2{
+			background:rgb(67, 67, 72);
+			padding:5px;
+			display:inline-block;
+			width:2px;
+			height:2px;
+			border-radius:5px;
+			margin-right: 3px;			
+		}
+		
+		footer{
+			background: #eee;
+			text-align: center;
+			padding:10px 0;
+			border-top:1px solid #ccc;
+		}
+		footer p{
+			text-align: center;
+			color:#666;
+			padding:0;
+			margin:0;
+		}
+		
+		@media (max-width: 768px) {
+			.container{
+				margin:0;
+			}
+			.setFree, .setDisk{
+				font-size:12px;
+				overflow:scroll;
+				white-space:nowrap;
+				overflow-x:auto;
+			}
+		}
+		@media (min-width: 768px) {
+			#main{
+				min-height:675px;
+			}
+		}
+		

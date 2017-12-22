@@ -64,5 +64,5 @@ public final class ZboxUtil extends AbstractMitlabUtil {
         Map<String, Object> urlParams = new HashMap<String, Object>();
         return this.proxyPost(bodyParams, urlParams, ZboxResult.class, "/user-logout.json");
     }
-
+    
 }

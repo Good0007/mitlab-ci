@@ -45,6 +45,8 @@ public class ZboxServlet extends HttpServlet {
     private static IssueMappingDao issueDao = null;
     private static SettingDao settingDao = null;
     private static ActionMappingDao actionMappingDao = null;
+    private long zboxReloginTime;
+    private long zboxLastAccessTime;
 
     @Override
     public void destroy() {
@@ -92,6 +94,34 @@ public class ZboxServlet extends HttpServlet {
             if (logger.isLoggable(Level.INFO)) {
                 logger.info("zbox notify:" + notify);
             }
+            if (System.currentTimeMillis() - zboxReloginTime > zboxLastAccessTime) {
+                if (logger.isLoggable(Level.INFO)) {
+                    logger.info("logout zbox for session[" + this.session + "]");
+                }
+                ZboxUtil.getInstance().logout(session);
+                this.session = ZboxUtil.getInstance().getZboxSession();
+                if (logger.isLoggable(Level.INFO)) {
+                    logger.info("new zbox session[" + this.session + "]");
+                }
+                if(this.session.getSettingInfo()==null){
+                	//重新登录
+                	this.loginSession();
+                }
+                ZboxUtil.getInstance().login(this.session.getSettingInfo().getZboxUser(), 
+                		this.session.getSettingInfo().getZboxPassword(), session);
+                if (logger.isLoggable(Level.INFO)) {
+                    logger.info("logout zbox for session[" + this.session + "]");
+                }
+                zboxLastAccessTime = System.currentTimeMillis();
+                if (logger.isLoggable(Level.INFO)) {
+                    logger.info(this.session.toString());
+                }
+            } else {
+                if (logger.isLoggable(Level.INFO)) {
+                    logger.info("refresh zbox alive time for session[" + this.session + "]");
+                    zboxLastAccessTime = System.currentTimeMillis();
+                }
+            }
             if ("task".equals(notify.getObjectType())) {
                 onTaskReceive(notify);
             } else if ("bug".equals(notify.getObjectType())) {
@@ -122,30 +152,6 @@ public class ZboxServlet extends HttpServlet {
                         logger.info("hit db:{issueId:" + issueRequest.getId() + ", issueIid:" + issueRequest.getIssueIid() + ", project:" + project + ",zid:" + cacheId + "}");
                     }
                 }
-                    /*Connection conn = null;
-                    PreparedStatement stmt = null;
-                    ResultSet rs = null;
-                    try {
-                        conn = h2Pool.getConnection();
-                        stmt = conn.prepareStatement("select gid, giid, project from t_issue where zid = ?");
-                        stmt.setString(1, cacheId);
-                        rs = stmt.executeQuery();
-                        if (rs.next()) {
-                            issueRequest.setId(rs.getString(1));
-                            issueRequest.setIssueIid(rs.getLong(2));
-                            project = rs.getString(3);
-                            foundIssueMapping = true;
-                            if (logger.isLoggable(Level.INFO)) {
-                                logger.info("hit db:{issueId:" + issueRequest.getId() + ", issueIid:" + issueRequest.getIssueIid() + ", project:" + project + ",zid:" + cacheId + "}");
-                            }
-                        }
-                    } catch (SQLException e) {
-                        throw new ZboxException("query issue mapping error", e);
-                    } finally {
-                        close(rs);
-                        close(stmt);
-                        close(conn);
-                    }*/
                 IssueResponse issueResponse = GitlabUtil.getInstance().createIssue(project, issueRequest, gitlabToken);
                 if(issueResponse!=null){
                 	if (!foundIssueMapping) {
@@ -169,10 +175,13 @@ public class ZboxServlet extends HttpServlet {
         //String gitlabAction = this.getInitParameter("zboxAction:" + notify.getAction());
         String gitlabAction = actionMappingDao.geGitlabActionByZboxAction("zboxAction:" + notify.getAction());
         if (gitlabAction != null && !"".equals(gitlabAction.trim())) {
-            if (!("close".equals(gitlabAction) || "reopen".equals(gitlabAction))) {
-                return;
+            String[] statusLabelArray = gitlabAction.split(",");
+            if (!"".equals(statusLabelArray[0])) {
+                issueRequest.setStateEvent(statusLabelArray[0]);
             }
-            issueRequest.setStateEvent(gitlabAction);
+            if (statusLabelArray.length > 1 && !"".equals(statusLabelArray[1])) {
+                issueRequest.setLabels(statusLabelArray[1]);
+            }
         }
     }
 
@@ -205,30 +214,6 @@ public class ZboxServlet extends HttpServlet {
                 logger.info("hit db:{issueId:" + issueRequest.getId() + ", issueIid:" + issueRequest.getIssueIid() + ", project:" + project + ",zid:" + cacheId + "}");
             }
         }
-            /*Connection conn = null;
-            PreparedStatement stmt = null;
-            ResultSet rs = null;
-            try {
-                conn = h2Pool.getConnection();
-                stmt = conn.prepareStatement("select gid, giid, project from t_issue where zid = ?");
-                stmt.setString(1, cacheId);
-                rs = stmt.executeQuery();
-                if (rs.next()) {
-                    issueRequest.setId(rs.getString(1));
-                    issueRequest.setIssueIid(rs.getLong(2));
-                    project = rs.getString(3);
-                    foundIssueMapping = true;
-                    if (logger.isLoggable(Level.INFO)) {
-                        logger.info("hit db:{issueId:" + issueRequest.getId() + ", issueIid:" + issueRequest.getIssueIid() + ", project:" + project + ",zid:" + cacheId + "}");
-                    }
-                }
-            } catch (SQLException e) {
-                throw new ZboxException("query issue mapping error", e);
-            } finally {
-                close(rs);
-                close(stmt);
-                close(conn);
-            }*/
         String gitlabToken = this.session.getSettingInfo().getGitlabToken();
         IssueResponse issueResponse = GitlabUtil.getInstance().createIssue(project, issueRequest, gitlabToken);
         if(issueResponse!=null){

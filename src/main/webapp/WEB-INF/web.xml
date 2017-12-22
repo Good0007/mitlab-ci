@@ -4,18 +4,6 @@
   <servlet>
     <servlet-name>zboxServlet</servlet-name>
     <servlet-class>com.mitlab.ci.ZboxServlet</servlet-class>
-    <!-- <init-param>
-      <param-name>zboxAction:canceled</param-name>
-      <param-value>close</param-value>
-    </init-param>
-    <init-param>
-      <param-name>zboxAction:activated</param-name>
-      <param-value>reopen</param-value>
-    </init-param>
-    <init-param>
-      <param-name>zboxAction:closed</param-name>
-      <param-value>close</param-value>
-    </init-param> -->
     <load-on-startup>2</load-on-startup>
   </servlet>
   <servlet-mapping>

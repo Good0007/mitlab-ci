@@ -11,22 +11,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.mitlab.ci.manager.SettingEntity;
 import com.mitlab.ci.manager.dao.SettingDao;
-import com.mitlab.ci.zbox.ZboxSession;
-import com.mitlab.ci.zbox.ZboxUtil;
 
 
 @WebServlet("/zboxSettingManager")
 public class ZboxSettingManagerServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
-	
-
-    public ZboxSettingManagerServlet() {
-        super();
-    }
-   
     private final Logger logger = Logger.getLogger(this.getClass().getName());
-    private volatile ZboxSession session;
     private static SettingDao settingDao;
     
     @Override
@@ -36,8 +27,6 @@ public class ZboxSettingManagerServlet extends HttpServlet {
     
     @Override
     public void destroy() {
-        ZboxUtil.getInstance().logout(session);
-        session = null;
         settingDao.closeConn();
         settingDao = null;
     }
@@ -51,27 +40,42 @@ public class ZboxSettingManagerServlet extends HttpServlet {
 				 String zboxUser = request.getParameter("zboxUser");
 				 String zboxPassword = request.getParameter("zboxPassword");
 				 String gitlabToken = request.getParameter("gitlabToken");
-				 String zboxProject = request.getParameter("zboxProject");
-				 String gitProject = request.getParameter("gitProject");
-				 if(zboxUrl!=null && gitlabUrl!=null && zboxUser!=null && 
-						 zboxPassword!=null && gitlabToken !=null){
-					 SettingEntity settingInfo = new SettingEntity();
-					 settingInfo.setZboxUrl(zboxUrl);
-					 settingInfo.setGitlabUrl(gitlabUrl);
-					 settingInfo.setGitlabToken(gitlabToken);
-					 settingInfo.setZboxUser(zboxUser);
-					 settingInfo.setZboxPassword(zboxPassword);
-					 settingInfo.setZboxProject(zboxProject);
-					 settingInfo.setGitProject(gitProject);
-					 boolean f = settingDao.updateSettingInfo(settingInfo);
-					 if( f ){
-						 logger.info("更新成功："+settingInfo.toString());
-						 response.getWriter().print("0000");
-					 }else{
-						 response.getWriter().print("0001");
-					 }
+				 if(zboxUrl==null || "".equals(zboxUrl) ){
+					 logger.info("更新设置,参数有误 : zboxUrl不得为空！");
+					 response.getWriter().print("0001");
+					 return ;
+				 }
+				 if(gitlabUrl==null || "".equals(gitlabUrl) ){
+					 logger.info("更新设置,参数有误 : gitlabUrl不得为空！");
+					 response.getWriter().print("0001");
+					 return ;
+				 }
+				 if(zboxUser==null || "".equals(zboxUser) ){
+					 logger.info("更新设置,参数有误 : zboxUser不得为空！");
+					 response.getWriter().print("0001");
+					 return ;
+				 }
+				 if(zboxPassword==null || "".equals(zboxPassword) ){
+					 logger.info("更新设置,参数有误 : zboxPassword不得为空！");
+					 response.getWriter().print("0001");
+					 return ;
+				 }
+				 if(gitlabToken==null || "".equals(gitlabToken) ){
+					 logger.info("更新设置,参数有误 : gitlabToken不得为空！");
+					 response.getWriter().print("0001");
+					 return ;
+				 }
+				 SettingEntity settingInfo = new SettingEntity();
+				 settingInfo.setZboxUrl(zboxUrl);
+				 settingInfo.setGitlabUrl(gitlabUrl);
+				 settingInfo.setGitlabToken(gitlabToken);
+				 settingInfo.setZboxUser(zboxUser);
+				 settingInfo.setZboxPassword(zboxPassword);
+				 boolean f = settingDao.updateSettingInfo(settingInfo);
+				 if( f ){
+					 logger.info("更新成功："+settingInfo.toString());
+					 response.getWriter().print("0000");
 				 }else{
-					 logger.info("更新设置：参数有误！");
 					 response.getWriter().print("0001");
 				 }
 				 
@@ -81,10 +85,8 @@ public class ZboxSettingManagerServlet extends HttpServlet {
 			} 
 	}
 
-
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		doGet(request, response);
 	}
-	
 
 }

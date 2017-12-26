@@ -11,13 +11,13 @@ import com.mitlab.ci.zbox.ZboxException;
 
 public class BaseDao {
 
-	public  JdbcConnectionPool h2Pool;
+	protected  JdbcConnectionPool h2Pool;
 	
 	public BaseDao() {
 		h2Pool = JdbcConnectionPool.create("jdbc:h2:~/mitlab_ci", "sa", "sa");
 	}
 
-    public  void close(Statement stmt) {
+	protected  void close(Statement stmt) {
         if (stmt != null) {
             try {
                 stmt.close();
@@ -27,7 +27,7 @@ public class BaseDao {
         }
     }
 
-    public  void close(ResultSet rs) {
+	protected  void close(ResultSet rs) {
         if (rs != null) {
             try {
                 rs.close();
@@ -37,7 +37,7 @@ public class BaseDao {
         }
     }
 
-    public  void close(Connection conn) {
+	protected  void close(Connection conn) {
         if (conn != null) {
             try {
                 conn.close();

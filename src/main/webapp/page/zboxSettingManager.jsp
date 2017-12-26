@@ -23,42 +23,17 @@
 						<a class="brand" href="#">MitlabManager</a>
 						<div class="nav-collapse">
 							<ul class="nav">
-								<li class="active">
+								<li  class="active">
 									<a href="zboxSettingManager">基础配置</a>
+								</li>
+								<li>
+									<a href="zboxProjectManager">项目配置</a>
 								</li>
 								<li>
 									<a href="zboxActionManager">Action配置</a>
 								</li>
 								<li>
 									<a href="#">帮助</a>
-								</li>
-								<li class="dropdown">
-									<a href="help.htm" class="dropdown-toggle" data-toggle="dropdown">Tours <b class="caret"></b></a>
-									<ul class="dropdown-menu">
-										<li>
-											<a href="#">Introduction Tour</a>
-										</li>
-										<li>
-											<a href="#">Project Organisation</a>
-										</li>
-										<li>
-											<a href="#">Task Assignment</a>
-										</li>
-										<li>
-											<a href="#">Access Permissions</a>
-										</li>
-										<li class="divider">
-										</li>
-										<li class="nav-header">
-											Files
-										</li>
-										<li>
-											<a href="#">How to upload multiple files</a>
-										</li>
-										<li>
-											<a href="#">Using file version</a>
-										</li>
-									</ul>
 								</li>
 							</ul>
 							<form class="navbar-search pull-left" action="">
@@ -87,19 +62,10 @@
 								<a href="zboxSettingManager"><i class="icon-white icon-home"></i> 基础配置</a>
 							</li>
 							<li>
+								<a href="zboxProjectManager"><i class="icon-check"></i> 项目配置</a>
+							</li>
+							<li>
 								<a href="zboxActionManager"><i class="icon-folder-open"></i> Action配置</a>
-							</li>
-							<li>
-								<a href="#"><i class="icon-check"></i> 任务</a>
-							</li>
-							<li>
-								<a href="#"><i class="icon-envelope"></i> 消息</a>
-							</li>
-							<li>
-								<a href="#"><i class="icon-file"></i> 文件</a>
-							</li>
-							<li>
-								<a href="#"><i class="icon-list-alt"></i> 工作流</a>
 							</li>
 							<li class="nav-header">
 								Your Account
@@ -120,76 +86,52 @@
 				</div>
 				<div class="span9">
 						<form  class="form-horizontal" id="settingForm">
-							<div class="alert alert-info" id="alertMsg">更新成功!</div>
+							<div class="alert alert-success" id="alertMsg">
+								更新成功!
+							</div>
 							<fieldset>
 							<legend>基础配置</legend>
 							<div class="control-group">
 								<label class="control-label" for="input01">禅道地址</label>
 								<div class="controls">
-									<input id="input01"  class="input-xlarge" type="text" name="zboxUrl" value="${baseSetting.zboxUrl}" placeholder="请输入禅道地址" />
+									<input id="input01"  class="input-xlarge" type="text" name="zboxUrl" value="${baseSetting.zboxUrl}" 
+									placeholder="请输入禅道地址  例:http://hostname:port/zentao" />
 								</div>
 							</div>
 							<div class="control-group">
 								<label class="control-label" for="input02">禅道帐号</label>
 								<div class="controls">
-									<input id="input02"  class="input-xlarge" type="text" name="zboxUser" value="${baseSetting.zboxUser}" placeholder="请输入禅道帐号" />
+									<input id="input02"  class="input-xlarge" type="text" name="zboxUser" value="${baseSetting.zboxUser}" 
+									placeholder="请输入禅道管理员帐号" />
 								</div>
 							</div>
 							
 							<div class="control-group">
 								<label class="control-label" for="input03">禅道密码</label>
 								<div class="controls">
-									<input id="input03"  class="input-xlarge" type="text" name="zboxPassword" value="${baseSetting.zboxPassword}" placeholder="请输入禅道密码" />
+									<input id="input03"  class="input-xlarge" type="text" name="zboxPassword" value="${baseSetting.zboxPassword}" 
+									placeholder="请输入禅道管理员密码" />
 								</div>
 							</div>
 							
 							<div class="control-group">
-								<label class="control-label" for="input04">GITLAB地址</label>
+								<label class="control-label" for="input04">gitlab地址</label>
 								<div class="controls">
-									<input id="input04"  class="input-xlarge" type="text" name="gitlabUrl" value="${baseSetting.gitlabUrl}" placeholder="请输入GITLAB地址" />
+									<input id="input04"  class="input-xlarge" type="text" name="gitlabUrl" value="${baseSetting.gitlabUrl}" 
+									placeholder="请输入gitlab地址 例:http://hostname:port" />
 								</div>
 							</div>
 							<div class="control-group">
-								<label class="control-label" for="input05">GITLAB token</label>
+								<label class="control-label" for="input05">gitlab令牌</label>
 								<div class="controls">
-									<input id="input05"  class="input-xlarge" type="text" name="gitlabToken" value="${baseSetting.gitlabToken}" placeholder="请输入GITLAB token" />
-								</div>
-							</div>
-							<div class="control-group">
-								<label class="control-label" for="input06">禅道项目</label>
-								<div class="controls">
-									<input id="input06"  class="input-xlarge" type="text" name="zboxProject" value="${baseSetting.zboxProject}" placeholder="请输入禅道项目名称" />
-								</div>
-							</div>
-						 	<div class="control-group">
-								<label class="control-label" for="input07">GITLAB项目[组/项目]</label>
-								<div class="controls">
-									<input id="input07"  class="input-xlarge" type="text" name="gitProject" value="${baseSetting.gitProject}" placeholder="请输入GITLAB项目[组/项目]" />
+									<input id="input05"  class="input-xlarge" type="text" name="gitlabToken" value="${baseSetting.gitlabToken}" 
+									placeholder="请输入gitlab令牌" />
 								</div>
 							</div>
 						    <div class="form-actions">
 			                     <button type="button" class="btn btn-primary" onclick="updateSetting(this)" data-loading-text="更新中..." >更新</button>
-			                 	 <button type="button" class="btn btn-success" onclick="getProjects(this)" >项目</button>
 			                 </div>
 						</fieldset>
-					<%-- 	<fieldset>
-							<legend>项目配置</legend>
-							<div class="control-group">
-								<label class="control-label" for="input06">禅道项目</label>
-								<div class="controls">
-									<input id="input06"  class="input-xlarge" type="text" name="zboxProject" value="${baseSetting.zboxProject}" placeholder="请输入禅道项目名称" />
-								</div>
-							</div>
-						 	<div class="control-group">
-								<label class="control-label" for="input07">GITLAB项目[组/项目]</label>
-								<div class="controls">
-									<input id="input07"  class="input-xlarge" type="text" name="gitProject" value="${baseSetting.gitProject}" placeholder="请输入GITLAB项目[组/项目]" />
-								</div>
-							</div>
-							<div class="form-actions">
-		                        <button type="button" class="btn btn-primary" onclick="updateSetting(this)" data-loading-text="更新中..." >更新</button>
-		                    </div>
-						</fieldset> --%>
 				      </form>	 
 				</div>
 			</div>
@@ -203,6 +145,28 @@
 		$("#alertMsg").hide();
 	});
 	function updateSetting(thisObj){
+		//校验必填项
+		var form = $("#settingForm")[0];
+		if((form.zboxUrl.value).trim() == ""){
+			$("#alertMsg").html("请填写禅道地址！").removeClass("alert-success").addClass("alert-danger").show(500);
+			return false;
+		}
+		if((form.zboxUser.value).trim() == ""){
+			$("#alertMsg").html( "请填写禅道管理员登录名！").removeClass("alert-success").addClass("alert-danger").show(500);
+			return false;
+		}
+		if((form.zboxPassword.value).trim() == ""){
+			$("#alertMsg").html("请填写禅道管理员密码！").removeClass("alert-success").addClass("alert-danger").show(500);
+			return false;
+		}
+		if((form.gitlabUrl.value).trim() == ""){
+			$("#alertMsg").html("请填写gitlab地址！").removeClass("alert-success").addClass("alert-danger").show(500);
+			return false;
+		}
+		if((form.gitlabToken.value).trim() == ""){
+			$("#alertMsg").html("请填写gitlab令牌！").removeClass("alert-success").addClass("alert-danger").show(500);
+			return false;
+		}
 		var _url = "<%=path%>/zboxSettingManager?m=updateSetting";
 		var btn=$(thisObj);
 		$.ajax({
@@ -217,12 +181,12 @@
 					$("#alertMsg").show(500);
 					reLoginSession();
 				}else{
-					$("#alertMsg").html("更新失败!").show(500);
+					$("#alertMsg").removeClass("alert-success").addClass("alert-danger").html("更新配置：失败!").show(500);
 				}
 				btn.button('reset');
 		  	},
 		  	error:function(){
-		  		$("#alertMsg").html("更新失败!").show(500);
+		  		$("#alertMsg").removeClass("alert-success").addClass("alert-danger").html("更新配置：失败!").show(500);
 		  		btn.button('reset');
 		  	}
 	    });
@@ -235,13 +199,14 @@
 			type:"post",
 			success:function(resp){
 				if(resp=='0000'){
-					$("#alertMsg").html("成功更新session！").show(500);
-					setTimeCloseMsg(1000);
+					$("#alertMsg").removeClass("alert-danger").addClass("alert-success").html("更新配置：成功！<br/> 重新登录：成功！").show(500);
+					setTimeCloseMsg(1500);
 				}else{
-					$("#alertMsg").html("重新登录失败!").show(500);
+					$("#alertMsg").removeClass("alert-success").addClass("alert-danger").html("重新登录失败!").show(500);
 				}
 		  	},
 		  	error:function(){
+		  		
 		  	}
 	    });
 	}
@@ -252,13 +217,10 @@
 		},time);
 	}
 	
-	function getProjects(thisObj){
-		var _url = "http://192.168.60.50:26080/zentao/project.json";
-		$.get(_url,function(resp){
-			alert(resp);
-		});
+	function validateForm(field , errMsg){
+		
+		return true;
 	}
-	
 	
 	</script>
 	</body>

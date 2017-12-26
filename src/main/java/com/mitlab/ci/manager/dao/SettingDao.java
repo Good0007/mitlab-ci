@@ -9,15 +9,19 @@ import com.mitlab.ci.manager.SettingEntity;
 
 public class SettingDao extends BaseDao{
 
-	
+	/**
+	 * 更新基础配置
+	 * @param settingInfo
+	 * @return
+	 */
 	public boolean updateSettingInfo(SettingEntity settingInfo){
-		String sql = " update t_setting set zbox_url=?, "
+		String sql = " update t_setting set "
+				+ "zbox_url=?, "
 				+ "gitlab_url=? ,"
 				+ "zbox_user=? , "
 				+ "zbox_password=? , "
-				+ "gitlab_token=?,"
-				+ "gitlab_project=?,"
-				+ "zbox_project=? where sid='10000' ";
+				+ "gitlab_token=? "
+				+ " where sid=? ";
 		
 		 Connection conn = null;
          PreparedStatement stmt = null;
@@ -29,9 +33,7 @@ public class SettingDao extends BaseDao{
 			stmt.setString(3, settingInfo.getZboxUser());
 			stmt.setString(4, settingInfo.getZboxPassword());
 			stmt.setString(5, settingInfo.getGitlabToken());
-			stmt.setString(6, settingInfo.getGitProject());
-			stmt.setString(7, settingInfo.getZboxProject());
-			
+			stmt.setString(6, settingInfo.getSid());
 			int i = stmt.executeUpdate();
 			if(i > 0){
 				return true;
@@ -52,24 +54,30 @@ public class SettingDao extends BaseDao{
 	 * @return SettingEntity
 	 */
 	public SettingEntity getSettingInfo(){
-		 String querySettingSql = "select * from t_setting where sid = 10000";
+		
+		SettingEntity setting = new SettingEntity();
+		 String querySettingSql = "select "
+										 		+ "zbox_url,"
+										 		+ "zbox_user,"
+										 		+ "zbox_password,"
+										 		+ "gitlab_url,"
+										 		+ "gitlab_token "
+							 		+ "from "
+							 				+ "t_setting where sid = ? ";
 		 Connection conn = null;
 	     PreparedStatement stmt = null;
 	     ResultSet res = null;
-	     SettingEntity setting = new SettingEntity();
 		 try {
 			conn = h2Pool.getConnection();
 			stmt = conn.prepareStatement(querySettingSql);
+			stmt.setString(1, setting.getSid());
 			res = stmt.executeQuery();
 			if(res.next()){
-				setting.setSid(res.getString("sid"));
 				setting.setZboxUrl(res.getString("zbox_url"));
 				setting.setZboxUser(res.getString("zbox_user"));
 				setting.setZboxPassword(res.getString("zbox_password"));
 				setting.setGitlabUrl(res.getString("gitlab_url"));
 				setting.setGitlabToken(res.getString("gitlab_token"));
-				setting.setGitProject(res.getString("gitlab_project"));
-				setting.setZboxProject(res.getString("zbox_project"));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

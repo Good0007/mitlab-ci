@@ -13,17 +13,21 @@ import com.mitlab.ci.AbstractMitlabUtil;
 import com.mitlab.ci.gitlab.issue.IssueRequest;
 import com.mitlab.ci.gitlab.issue.IssueResponse;
 import com.mitlab.ci.gitlab.user.GitlabUser;
+import com.mitlab.ci.manager.dao.SettingDao;
 import com.mitlab.ci.zbox.ZboxException;
 
 public final class GitlabUtil extends AbstractMitlabUtil {
-    private static final GitlabUtil GITLAB_UTIL = new GitlabUtil("http://192.168.60.50:27080/gitlab");
+    //private static  GitlabUtil GITLAB_UTIL = new GitlabUtil("http://192.168.60.50:27080/gitlab");
 
     protected GitlabUtil(String accessUrl) {
         super(accessUrl);
     }
 
     public static final GitlabUtil getInstance() {
-        return GITLAB_UTIL;
+    	SettingDao setting = new SettingDao();
+    	String gitlabUrl = setting.getSettingInfo().getGitlabUrl();
+    	setting.closeConn();
+        return new GitlabUtil(gitlabUrl);
     }
 
     public IssueResponse createIssue(String project, IssueRequest issue, String accessToken) {

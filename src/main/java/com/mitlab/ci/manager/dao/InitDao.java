@@ -10,24 +10,26 @@ import com.mitlab.ci.zbox.ZboxException;
 public class InitDao extends BaseDao{
 
 	   private void initBaseSetting(){
-	    	 String initSql = "insert into t_setting ("
+	    	/**
+	    	 * 初始化基础配置表，
+	    	 * 默认主键为10000
+	    	 * 
+	    	 */
+		   String initSql = "insert into t_setting ("
 	          		+ "sid,"
 	          		+ "zbox_url,"
 	          		+ "gitlab_url,"
 	          		+ "zbox_user,"
 	          		+ "zbox_password ,"
-	          		+ "gitlab_token,"
-	          		+ "gitlab_project,"
-	          		+ "zbox_project) "
+	          		+ "gitlab_token"
+	          		+ ") "
 	          		+ "values "
 	          		+ "('10000',"
-	          		+ "'http://192.168.60.50:26080/zentao',"
-	          		+ "'http://192.168.60.50:27080/gitlab',"
-	          		+ "'admin',"
-	          		+ "'Passw0rd',"
-	          		+ "'ctruqkRFonzDbNuBzYVc',"
-	          		+ " '',"
-	          		+ " '' )";
+	          		+ "'',"
+	          		+ "'',"
+	          		+ "'',"
+	          		+ "'',"
+	          		+ "'' )";
 	    	 
 	    	 String sql = "select sid from t_setting where sid = 10000"; 
 	    	 Connection conn = null;
@@ -51,34 +53,46 @@ public class InitDao extends BaseDao{
 	            close(conn);
 	        }
 	    }
-	   
+	  
+	/**
+	 * 初始化数据表
+	 * @return
+	 */
 	public boolean initDataTable(){
     	boolean flag = true;
-    	//初始化数据表
+    	//基础配置表
     	String createSettingTable = "create cached table if not exists "
          		+ "t_setting(sid varchar(32) primary key, "
          		+ "zbox_url varchar(64), "
          		+ "gitlab_url varchar(64), "
          		+ "zbox_user varchar(20) , "
          		+ "zbox_password varchar(32),"
-         		+ "gitlab_token varchar(32),"
-         		+ "gitlab_project varchar(64),"
-         		+ "zbox_project varchar(64))";
+         		+ "gitlab_token varchar(32))";
+    	//issue映射表
     	String createIssueTable = "create cached table if not exists t_issue("
-    			+ "zid varchar(32) primary key, "
+    			+ "id varchar(32) primary key,"
+    			+ "zid varchar(32), "
     			+ "gid varchar(32), "
     			+ "giid varchar(32), "
     			+ "project varchar(128))";
+    	//action和label映射表
     	String createActionMappingTable = "create cached table if not exists t_action_mapping("
     			+ "aid varchar(32) primary key, "
-    			+ "zbox_action varchar(32), "
-    			+ "gitlab_action varchar(32))";
-    	
+    			+ "zbox_action varchar(32),"
+    			+ "gitlab_label varchar(32), "
+    			+ "gitlab_action varchar(32), "
+    			+ "project varchar(128)) ";
+    	//项目映射表
+    	String  createProjectMappingTable = "create cached table if not exists t_project("
+    			+ "pid varchar(32) primary key, "
+    			+ "zbox_project varchar(128), "
+    			+ "gitlab_project varchar(128))";
         //h2Pool = JdbcConnectionPool.create("jdbc:h2:~/mitlab_ci", "sa", "sa");
         Connection conn = null;
         PreparedStatement stmt1 = null;
         PreparedStatement stmt2 = null;
         PreparedStatement stmt3 = null;
+        PreparedStatement stmt4 = null;
         try {
             conn = h2Pool.getConnection();
             stmt1 = conn.prepareStatement(createSettingTable);
@@ -87,6 +101,8 @@ public class InitDao extends BaseDao{
             stmt2.execute();
             stmt3 = conn.prepareStatement(createActionMappingTable);
             stmt3.execute();
+            stmt4= conn.prepareStatement(createProjectMappingTable);
+            stmt4.execute();
             initBaseSetting();
         } catch (SQLException e) {
         	flag = false;
@@ -95,6 +111,7 @@ public class InitDao extends BaseDao{
             close(stmt1);
             close(stmt2);
             close(stmt3);
+            close(stmt4);
             close(conn);
         }
         return flag;

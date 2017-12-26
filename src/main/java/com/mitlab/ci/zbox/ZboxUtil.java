@@ -1,6 +1,7 @@
 package com.mitlab.ci.zbox;
 
 import com.mitlab.ci.AbstractMitlabUtil;
+import com.mitlab.ci.manager.dao.SettingDao;
 import com.mitlab.ci.zbox.bug.ZboxBug;
 import com.mitlab.ci.zbox.bug.ZboxBugResult;
 import com.mitlab.ci.zbox.task.ZboxTask;
@@ -9,13 +10,16 @@ import com.mitlab.ci.zbox.task.ZboxTaskResult;
 import java.util.*;
 
 public final class ZboxUtil extends AbstractMitlabUtil {
-    private static final ZboxUtil ZBOX_UTIL = new ZboxUtil("http://192.168.60.50:26080/zentao");
+    //private static final ZboxUtil ZBOX_UTIL = new ZboxUtil("http://192.168.60.50:26080/zentao");
     protected ZboxUtil(String accessUrl) {
         super(accessUrl);
     }
 
     public static final ZboxUtil getInstance() {
-        return ZBOX_UTIL;
+    	SettingDao setting = new SettingDao();
+    	String zboxUrl = setting.getSettingInfo().getZboxUrl();
+    	setting.closeConn();
+    	return new ZboxUtil(zboxUrl);
     }
 
     public ZboxSession getZboxSession() {
@@ -27,9 +31,10 @@ public final class ZboxUtil extends AbstractMitlabUtil {
 
     public static void main(String[] args) {
         ZboxSession session = ZboxUtil.getInstance().getZboxSession();
-        System.out.println(ZboxUtil.getInstance().login("admin", "Passw0rd", session).getIp());
-        System.out.println(ZboxUtil.getInstance().getTask("4", session));
-        ZboxUtil.getInstance().logout(session);
+        //System.out.println(ZboxUtil.getInstance().login("admin", "Cwk199432", session).getIp());
+        //System.out.println(ZboxUtil.getInstance().getTask("4", session));
+        //System.out.println(ZboxUtil.getInstance().getProjects(session).toString());
+        //ZboxUtil.getInstance().logout(session);
     }
 
     public ZboxUser login(String username, String password, ZboxSession session) {
@@ -65,4 +70,10 @@ public final class ZboxUtil extends AbstractMitlabUtil {
         return this.proxyPost(bodyParams, urlParams, ZboxResult.class, "/user-logout.json");
     }
     
+    public String getProjectsJson(ZboxSession session , String jsonPath){
+    	 Map<String, Object> bodyParams = new HashMap<String, Object>();
+         Map<String, Object> urlParams = new HashMap<String, Object>();
+         urlParams.put(session.getSessionName(), session.getSessionID());
+         return this.getJsonString(bodyParams, urlParams,null, jsonPath);
+    }
 }

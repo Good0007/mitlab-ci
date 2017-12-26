@@ -14,11 +14,13 @@ import com.mitlab.ci.gitlab.GitlabUtil;
 import com.mitlab.ci.gitlab.issue.IssueRequest;
 import com.mitlab.ci.gitlab.issue.IssueResponse;
 import com.mitlab.ci.gitlab.user.GitlabUser;
+import com.mitlab.ci.manager.ActionMappingEntity;
 import com.mitlab.ci.manager.IssueMappingEntity;
 import com.mitlab.ci.manager.SettingEntity;
 import com.mitlab.ci.manager.dao.ActionMappingDao;
 import com.mitlab.ci.manager.dao.InitDao;
 import com.mitlab.ci.manager.dao.IssueMappingDao;
+import com.mitlab.ci.manager.dao.ProjectDao;
 import com.mitlab.ci.manager.dao.SettingDao;
 import com.mitlab.ci.zbox.ZboxNotify;
 import com.mitlab.ci.zbox.ZboxSession;
@@ -45,6 +47,7 @@ public class ZboxServlet extends HttpServlet {
     private static IssueMappingDao issueDao = null;
     private static SettingDao settingDao = null;
     private static ActionMappingDao actionMappingDao = null;
+    private static ProjectDao projectDao = null;
     private long zboxReloginTime;
     private long zboxLastAccessTime;
 
@@ -56,18 +59,16 @@ public class ZboxServlet extends HttpServlet {
         initDao = null;
     }
 
-  
-
     @Override
     public void init() throws ServletException {
     	initDao = new InitDao();
     	issueDao = new IssueMappingDao();
     	settingDao = new SettingDao();
     	actionMappingDao = new ActionMappingDao();
+    	projectDao = new ProjectDao();
     	if(!initDao.initDataTable()){
     		logger.info("初始化数据表错误！");
     	}
-    	
         if(!this.loginSession()){
         	logger.info("登录失败：初始化setting错误！");
         }
@@ -77,14 +78,19 @@ public class ZboxServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
-        String isUpdateSession = request.getParameter("m");
-        if(isUpdateSession!=null){
+        String method = request.getParameter("m");
+        //请求刷新session
+        if(method!=null && "updateSession".equals(method)){
         	loginSession();
         	logger.info(".......... Relogin Session ..........");
         	response.getWriter().print("0000");
         	return;
+        }else if("getProjects".equals(method)){
+        	//获取禅道项目列表
+        	String projectJson = ZboxUtil.getInstance().getProjectsJson( this.session, "/project.json");
+        	response.getWriter().print(projectJson);
+        	return;
         }
-        
         InputStream ins = null;
         try {
             ins = request.getInputStream();
@@ -125,41 +131,7 @@ public class ZboxServlet extends HttpServlet {
             if ("task".equals(notify.getObjectType())) {
                 onTaskReceive(notify);
             } else if ("bug".equals(notify.getObjectType())) {
-                ZboxBug bug = ZboxUtil.getInstance().getBug(notify.getObjectId(), session);
-                IssueRequest issueRequest = new IssueRequest();
-                String gitlabToken = this.session.getSettingInfo().getGitlabToken();
-                GitlabUser gitlabUser = GitlabUtil.getInstance().getUserDetails(bug.getBug().getAssignedTo(), gitlabToken);
-                if (gitlabUser != null) {
-                    issueRequest.setAssigneeIds(new Long[] {gitlabUser.getId()});
-                }
-                ZboxBugDetails bugDetails = bug.getBug();
-                String cacheId = "Bug-" + bugDetails.getId();
-                issueRequest.setId(cacheId);
-                String title = bugDetails.getTitle();
-                issueRequest.setTitle(title);
-                issueRequest.setDescription(bugDetails.getSteps());
-                setIssueStatus(notify, issueRequest);
-                //String project = getInitParameter(bug.getBug().getProjectName());
-                String project = this.session.getSettingInfo().getGitProject();
-                boolean foundIssueMapping = false;
-                IssueMappingEntity issue =  issueDao.findIssueMapping(cacheId);
-                if(issue!=null){
-                	foundIssueMapping = true;
-                	issueRequest.setId(issue.getGid());
-                    issueRequest.setIssueIid(issue.getGiid());
-                    project = issue.getProject();
-                	if (logger.isLoggable(Level.INFO)) {
-                        logger.info("hit db:{issueId:" + issueRequest.getId() + ", issueIid:" + issueRequest.getIssueIid() + ", project:" + project + ",zid:" + cacheId + "}");
-                    }
-                }
-                IssueResponse issueResponse = GitlabUtil.getInstance().createIssue(project, issueRequest, gitlabToken);
-                if(issueResponse!=null){
-                	if (!foundIssueMapping) {
-                        issueDao.setIssueMapping2DB(issueRequest, cacheId, project, issueResponse);
-                    }
-                }else{
-                	logger.info("ERROR：请检查GitlabProject名称是否配置正确！");
-                }
+            	onBugReceive(notify);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -171,10 +143,19 @@ public class ZboxServlet extends HttpServlet {
         response.getWriter().print("OK");
     }
 
-    private void setIssueStatus(ZboxNotify notify, IssueRequest issueRequest) {
-        //String gitlabAction = this.getInitParameter("zboxAction:" + notify.getAction());
-        String gitlabAction = actionMappingDao.geGitlabActionByZboxAction("zboxAction:" + notify.getAction());
-        if (gitlabAction != null && !"".equals(gitlabAction.trim())) {
+    private void setIssueStatus(ZboxNotify notify, IssueRequest issueRequest , String project) {
+        ActionMappingEntity action = actionMappingDao.getActionByZboxAction("zboxAction:" + notify.getAction() , project);
+        if(action!=null){
+        	//添加状态信息
+        	if (action.getGitlabAction() != null && !"".equals(action.getGitlabAction())) {
+        		issueRequest.setStateEvent(action.getGitlabAction());
+        	}
+        	//添加label信息
+        	 if (action.getGitlabLabel() != null  && !"".equals(action.getGitlabLabel())) {
+                 issueRequest.setLabels(action.getGitlabLabel());
+             }
+        }
+        /*if (gitlabAction != null && !"".equals(gitlabAction.trim())) {
             String[] statusLabelArray = gitlabAction.split(",");
             if (!"".equals(statusLabelArray[0])) {
                 issueRequest.setStateEvent(statusLabelArray[0]);
@@ -182,7 +163,7 @@ public class ZboxServlet extends HttpServlet {
             if (statusLabelArray.length > 1 && !"".equals(statusLabelArray[1])) {
                 issueRequest.setLabels(statusLabelArray[1]);
             }
-        }
+        }*/
     }
 
     private void onTaskReceive(ZboxNotify notify) {
@@ -199,45 +180,102 @@ public class ZboxServlet extends HttpServlet {
         title = title.substring(title.indexOf(" "), title.lastIndexOf("/"));
         issueRequest.setTitle(title);
         issueRequest.setDescription(taskDetails.getDesc());
-        setIssueStatus(notify, issueRequest);
-        //@TODO 项目配置需要更新
-        //String project = getInitParameter(task.getProject().getName());
-        String project = this.session.getSettingInfo().getGitProject();
+        String zboxProject = task.getProject().getName();
+        setIssueStatus(notify, issueRequest , zboxProject);
+        String gitlabProject = projectDao.findGitlabProjectByZboxProject(zboxProject);
+        if(gitlabProject==null){
+        	logger.info("onTaskReceive - ERROR：请检查GitlabProject名称是否配置正确！");
+        	return ;
+        }
         boolean foundIssueMapping = false;
-        IssueMappingEntity issue =  issueDao.findIssueMapping(cacheId);
+        IssueMappingEntity issue =  issueDao.findIssueMapping(cacheId , gitlabProject);
         if(issue!=null){
         	foundIssueMapping = true;
         	issueRequest.setId(issue.getGid());
             issueRequest.setIssueIid(issue.getGiid());
-            project = issue.getProject();
+            //gitlabProject = issue.getProject();
         	if (logger.isLoggable(Level.INFO)) {
-                logger.info("hit db:{issueId:" + issueRequest.getId() + ", issueIid:" + issueRequest.getIssueIid() + ", project:" + project + ",zid:" + cacheId + "}");
+                logger.info("onTaskReceive - issueMapping : " +issue.toString());
             }
         }
         String gitlabToken = this.session.getSettingInfo().getGitlabToken();
-        IssueResponse issueResponse = GitlabUtil.getInstance().createIssue(project, issueRequest, gitlabToken);
+        IssueResponse issueResponse = GitlabUtil.getInstance().createIssue(gitlabProject, issueRequest, gitlabToken);
         if(issueResponse!=null){
         	 if (!foundIssueMapping) {
-                 issueDao.setIssueMapping2DB(issueRequest, cacheId, project, issueResponse);
+                 issueDao.setIssueMapping2DB(issueRequest, cacheId, gitlabProject, issueResponse);
              }
         }else{
         	logger.info("ERROR：请检查GitlabProject名称是否配置正确！");
         }
        
     }
+    
+    private void onBugReceive(ZboxNotify notify) {
+    	ZboxBug bug = ZboxUtil.getInstance().getBug(notify.getObjectId(), session);
+        IssueRequest issueRequest = new IssueRequest();
+        String gitlabToken = this.session.getSettingInfo().getGitlabToken();
+        GitlabUser gitlabUser = GitlabUtil.getInstance().getUserDetails(bug.getBug().getAssignedTo(), gitlabToken);
+        if (gitlabUser != null) {
+            issueRequest.setAssigneeIds(new Long[] {gitlabUser.getId()});
+        }
+        ZboxBugDetails bugDetails = bug.getBug();
+        String cacheId = "Bug-" + bugDetails.getId();
+        issueRequest.setId(cacheId);
+        String title = bugDetails.getTitle();
+        issueRequest.setTitle(title);
+        issueRequest.setDescription(bugDetails.getSteps());
+        String zboxProject = bug.getBug().getProjectName();
+        setIssueStatus(notify, issueRequest ,zboxProject);
+        String gitlabProject = projectDao.findGitlabProjectByZboxProject(zboxProject);
+        if(gitlabProject==null){
+        	logger.info("ERROR：请检查禅道项目名称是否配置正确！");
+        	return ;
+        }
+        boolean foundIssueMapping = false;
+        IssueMappingEntity issue =  issueDao.findIssueMapping(cacheId , gitlabProject);
+        if(issue!=null){
+        	foundIssueMapping = true;
+        	issueRequest.setId(issue.getGid());
+            issueRequest.setIssueIid(issue.getGiid());
+            //gitlabProject = issue.getProject();
+        	if (logger.isLoggable(Level.INFO)) {
+        		logger.info("onBugReceive - issueMapping : " +issue.toString());
+            }
+        }
+        IssueResponse issueResponse = GitlabUtil.getInstance().createIssue(gitlabProject, issueRequest, gitlabToken);
+        if(issueResponse!=null){
+        	if (!foundIssueMapping) {
+                issueDao.setIssueMapping2DB(issueRequest, cacheId, gitlabProject, issueResponse);
+            }
+        }else{
+        	logger.info("ERROR：请检查禅道项目名称是否配置正确！");
+        }
+    }
 
     
     private boolean loginSession(){
-    	SettingEntity settingInfo = settingDao.getSettingInfo();
-    	if(settingInfo == null ) return false;
-    	ZboxUtil.getInstance().setAccessUrl(settingInfo.getZboxUrl());
-        GitlabUtil.getInstance().setAccessUrl(settingInfo.getGitlabUrl());
-        this.session = ZboxUtil.getInstance().getZboxSession();
-        this.session.setSettingInfo(settingInfo);
-        ZboxUtil.getInstance().login(settingInfo.getZboxUser(), settingInfo.getZboxPassword() , session);
-        if (logger.isLoggable(Level.INFO)) {
-            logger.info("登录SESSION:"+this.session.toString());
-        }
+    	try {
+    		SettingEntity settingInfo = settingDao.getSettingInfo();
+        	if(settingInfo == null ){
+        		logger.info("登录失败，基础配置表错误：没有数据！");
+        		return false;
+        	} 
+        	if("".equals(settingInfo.getZboxUrl()) || "".equals(settingInfo.getZboxUser())){
+        		logger.info("初次部署，请在配置界面手动填写基础配置！");
+        		return true;
+        	}
+        	ZboxUtil.getInstance().setAccessUrl(settingInfo.getZboxUrl());
+            GitlabUtil.getInstance().setAccessUrl(settingInfo.getGitlabUrl());
+            this.session = ZboxUtil.getInstance().getZboxSession();
+            this.session.setSettingInfo(settingInfo);
+            ZboxUtil.getInstance().login(settingInfo.getZboxUser(), settingInfo.getZboxPassword() , session);
+            if (logger.isLoggable(Level.INFO)) {
+                logger.info("登录SESSION:"+this.session.toString());
+            }
+		} catch (Exception e) {
+			logger.info("登录失败，请检查基础配置是否正确:"+e.getMessage());
+			return false;
+		}
         return true;
     }
     

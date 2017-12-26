@@ -166,6 +166,118 @@ public class AbstractMitlabUtil {
         }
         return proxyResult;
     }
+    
+    protected String getJsonString(Map<String , Object> bodyParams, Map<String, Object> urlParams, Map<String, Object> headerParams, String relativePath){
+        Set<Map.Entry<String, Object>> requestEntries;
+        StringEntity requestEntity;
+        if (headerParams != null && "application/json".equals(headerParams.get("Content-Type"))) {
+            ObjectMapper om = newObjectMapper();
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            try {
+                om.writeValue(buffer, bodyParams);
+                requestEntity = new StringEntity(new String(buffer.toString(Consts.UTF_8.name())), Consts.UTF_8);
+            } catch (Exception e) {
+                throw new ZboxException(e.getMessage(), e);
+            }
+        } else {
+            List<NameValuePair> params = new ArrayList<NameValuePair>();
+            if (bodyParams != null) {
+                requestEntries = bodyParams.entrySet();
+                for (Map.Entry<String, Object> entry: requestEntries) {
+                    if (entry.getValue() == null) {
+                        continue;
+                    }
+                    params.add(new BasicNameValuePair(entry.getKey(), entry.getValue().toString()));
+                }
+            }
+            requestEntity = new UrlEncodedFormEntity(params, Consts.UTF_8);
+        }
+
+        StringBuilder url = new StringBuilder(this.accessUrl);
+        url.append(relativePath);
+        if (urlParams != null) {
+            requestEntries = urlParams.entrySet();
+            String append = "?";
+            for (Map.Entry<String, Object> entry: requestEntries) {
+                url.append(append).append(entry.getKey()).append("=").append(entry.getValue() == null ? "": entry.getValue().toString());
+                if (append.equals("?")) {
+                    append = "&";
+                }
+            }
+        }
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("Access:" + url.toString());
+        }
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        HttpRequestBase httpRequestBase;
+        if (bodyParams != null) {
+            if(headerParams != null && "PUT".equals(headerParams.get("Method"))) {
+                httpRequestBase = new HttpPut(url.toString());
+            } else {
+                httpRequestBase = new HttpPost(url.toString());
+            }
+        } else {
+            if(headerParams != null && "GET".equals(headerParams.get("Method"))) {
+                httpRequestBase = new HttpGet(url.toString());
+            } else if(headerParams != null && "DELETE".equals(headerParams.get("Method"))) {
+                httpRequestBase = new HttpDelete(url.toString());
+            } else {
+                httpRequestBase = new HttpDelete(url.toString());
+            }
+        }
+
+        if (headerParams != null) {
+            requestEntries = headerParams.entrySet();
+            for (Map.Entry<String, Object> entry: requestEntries) {
+                if (entry.getValue() == null) {
+                    continue;
+                }
+                if ("Method".equals(entry.getKey())) {
+                    continue;
+                }
+                httpRequestBase.addHeader(entry.getKey(), entry.getValue().toString());
+            }
+        }
+
+        CloseableHttpResponse response = null;
+        InputStream content = null;
+        try {
+            if (httpRequestBase instanceof HttpEntityEnclosingRequestBase) {
+                ((HttpEntityEnclosingRequestBase) httpRequestBase).setEntity(requestEntity);
+            }
+            HttpClientContext context = null;
+            response = httpclient.execute(httpRequestBase, context);
+            ByteArrayOutputStream arrayBuffer = new ByteArrayOutputStream();
+            HttpEntity responseEntity = response.getEntity();
+            responseEntity.writeTo(arrayBuffer);
+            if (logger.isLoggable(Level.INFO)) {
+                logger.info("Response:" + new String(arrayBuffer.toByteArray()));
+            }
+            return new String(arrayBuffer.toByteArray());
+        } catch (IOException e) {
+            throw new ZboxException(e.getMessage(), e);
+        } finally {
+            if (content != null) {
+                try {
+                    content.close();
+                } catch (IOException e) {
+                    throw new ZboxException(e.getMessage(), e);
+                }
+            }
+            if (response != null) {
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    throw new ZboxException(e.getMessage(), e);
+                }
+            }
+            try {
+                httpclient.close();
+            } catch (IOException e) {
+                throw new ZboxException(e.getMessage(), e);
+            }
+        }
+    }
 
     public static final ObjectMapper newObjectMapper() {
         ObjectMapper om = new ObjectMapper();

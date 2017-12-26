@@ -27,16 +27,15 @@
 								<li>
 									<a href="zboxSettingManager">基础配置</a>
 								</li>
-								<li>
+								<li  class="active">
 									<a href="zboxProjectManager">项目配置</a>
 								</li>
-								<li  class="active">
+								<li>
 									<a href="zboxActionManager">Action配置</a>
 								</li>
 								<li>
 									<a href="#">帮助</a>
 								</li>
-								
 							</ul>
 							<form class="navbar-search pull-left" action="">
 								<input type="text" class="search-query span2" placeholder="Search" />
@@ -63,14 +62,14 @@
 							<li>
 								<a href="zboxSettingManager"><i class="icon-white icon-home"></i> 基础配置</a>
 							</li>
-							<li>
+							<li   class="active">
 								<a href="zboxProjectManager"><i class="icon-check"></i> 项目配置</a>
 							</li>
-							<li  class="active">
+							<li>
 								<a href="zboxActionManager"><i class="icon-folder-open"></i> Action配置</a>
 							</li>
-							<li>
-							<!-- 	<a href="#"><i class="icon-envelope"></i> 消息</a>
+							<!-- <li>
+								<a href="#"><i class="icon-envelope"></i> 消息</a>
 							</li>
 							<li>
 								<a href="#"><i class="icon-file"></i> 文件</a>
@@ -97,17 +96,6 @@
 				</div>
 				<div class="span9">
 						<div class="alert alert-info" id="alertMsg">添加成功!</div>
-						<div class="control-group">
-							<label class="control-label" for="select01">选择项目</label>
-							<div class="controls">
-								<select id="select01" name="project" onchange="chooseProjectAction(this)"> 
-									<option value="">-- 全部显示 --</option> 
-									<c:forEach items="${projectList}" var="obj">
-										<option value="${obj.zboxProject }">${obj.zboxProject }</option> 
-									</c:forEach> 
-								</select>
-							</div>
-						</div>
 						<table class="table table-bordered table-striped">
 							<thead>
 								<tr>
@@ -115,16 +103,10 @@
 										ID
 									</th> -->
 									<th>
-										禅道 Action
+										禅道项目
 									</th>
 									<th>
-										Gitlab Action
-									</th>
-									<th>
-										Gitlab Label
-									</th>
-									<th>
-										所属项目
+										GITLAB项目[组/项目]
 									</th>
 									<th>
 										操作
@@ -132,26 +114,22 @@
 								</tr>
 							</thead>
 							<tbody>
-								<c:forEach items="${actionMappingList}" var="obj">
+								<c:forEach items="${projectList}" var="obj">
 									<tr>
 										<%-- <td>
-											${obj.aid }
+											${obj.pid }
 										</td> --%>
 										<td>
-											${obj.zboxAction }
+											${obj.zboxProject }
 										</td>
 										<td>
-											${obj.gitlabAction }
+											${obj.gitlabProject }
 										</td>
 										<td>
-											${obj.gitlabLabel }
-										</td>
-										<td>
-											${obj.project }
-										</td>
-										<td>
-											<a href="#" val="<%=path%>/zboxActionManager?m=removeMapping&aid=${obj.aid}" 
-											onclick="removeAction(this)">移除</a>
+											<a href="zboxActionManager?project=${obj.zboxProject }"  >配置Action</a>
+											|
+											<a href="#" val="<%=path%>/zboxProjectManager?m=removeProject&pid=${obj.pid}" 
+											onclick="removeProject(this)">移除</a>
 										</td>
 									</tr>
 								</c:forEach>
@@ -160,66 +138,35 @@
 					
 					<a class="toggle-link" href="#actionForm"><i class="icon-plus"></i> 新增</a>
 					<form id="actionForm" class="form-horizontal hidden">
+					<div id="zboxProjectAlert" class="alert alert-danger fade in">
+					 	<button class="close" >
+					 		<span>&times;</span>
+					 	</button>
+					 	<p>获取禅道项目失败，请检查基础配置是否正确！</p>
+					 </div>	
 						<fieldset>
-							<legend>New Action Mapping</legend>
-							<div class="control-group">
-								<label class="control-label" for="select02">禅道项目</label>
-								<div class="controls">
-									<select id="select02" name="project"> 
-										<c:forEach items="${projectList}" var="obj">
-											<option value="${obj.zboxProject }">${obj.zboxProject }</option> 
-										</c:forEach> 
-									</select>
-								</div>
-							</div>
-								<!-- 
-								<div class="control-group">
-								<label class="control-label" for="input01">禅道操作</label>
-								<div class="controls">
-									<input type="text" class="input-xlarge" name="zboxAction" id="input01" />
-								</div>
-								</div>
-								 -->
-								<div class="control-group">
-								<label class="control-label" for="select03">禅道操作</label>
-								<div class="controls">
-									<select id="select03" name="zboxAction"> 
-										<option value="zboxAction:opened">创建:opened</option> 
-										<option value="zboxAction:started">开始:started</option> 
-										<option value="zboxAction:restarted">重新开始:restarted</option> 
-										<option value="zboxAction:paused">暂停:paused</option> 
-										<option value="zboxAction:resolved">解决:resolved</option> 
-										<option value="zboxAction:canceled">取消:canceled</option> 
-										<option value="zboxAction:activated">激活:activated</option> 
-										<option value="zboxAction:closed">关闭:closed</option> 
-										<option value="zboxAction:finished">完成:finished</option> 
-									</select>
-								</div>
-							</div>
-							<div class="control-group">
-								<label class="control-label" for="select04">Gitlab操作</label>
-								<div class="controls">
-									<select id="select04" name="gitlabAction"> 
-										<option value="">无操作</option> 
-										<option value="reopen">打开 [reopen]</option> 
-										<option value="close">关闭 [close]</option> 
-									</select>
-								</div>
-							</div>
+							<legend>New Project Mapping</legend>
 							<!-- <div class="control-group">
-								<label class="control-label" for="input02"></label>
+								<label class="control-label" for="input01">禅道项目</label>
 								<div class="controls">
-									<input type="text" class="input-xlarge" name="gitlabAction"  id="input02" placeholder="请输入Gitlab操作 如：close,open..."/>
+									<input type="text" class="input-xlarge" name="zboxProject" id="input01" />
 								</div>
 							</div> -->
 							<div class="control-group">
-								<label class="control-label" for="input03">Gitlab Label</label>
+								<label class="control-label" for="zboxProject">禅道项目</label>
 								<div class="controls">
-									<input type="text" class="input-xlarge" name="gitlabLabel"  id="input03" placeholder="请输入Gitlab Label 如：doing,done..."/>
+									<select id="zboxProject" name="zboxProject">
+									</select>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="input02">gitlab项目[组/项目]</label>
+								<div class="controls">
+									<input type="text" class="input-xlarge" name="gitlabProject"  id="input02" placeholder="请输入 gitlab项目[组/项目]"/>
 								</div>
 							</div>
 							<div class="form-actions">
-								<button type="button" data-loading-text="提交中..."  class="btn btn-primary" onclick="addActionMapping(this)">提交</button> 
+								<button type="button" data-loading-text="提交中..."  class="btn btn-primary" onclick="addProject(this)">提交</button> 
 								<button type="button" class="btn" onclick="hideActionForm()">取消</button>
 							</div>
 						</fieldset>
@@ -234,10 +181,11 @@
 	
 	$(function(){
 		$("#alertMsg").hide();
-		$("select[name=project]").val("${project}");
+		$("#zboxProjectAlert").hide();
+		getProjects();
 	});
-	function addActionMapping(thisObj){
-		var _url = "<%=path%>/zboxActionManager?m=addMapping";
+	function addProject(thisObj){
+		var _url = "<%=path%>/zboxProjectManager?m=addProject";
 		var btn=$(thisObj);
 		$.ajax({
 			url:_url,
@@ -262,42 +210,55 @@
 	    });
 	}
 	
-	function removeAction(thisObj){
-		$.ajax({
-			url:$(thisObj).attr("val"),
-			type:"post",
-			success:function(resp){
-				if(resp=='0000'){
-					$("#alertMsg").html("移除成功!").show(500);
-					setTimeCloseMsg(1000);
-				}else{
-					$("#alertMsg").html("移除失败!").show(500);
-				}
-		  	},
-		  	error:function(){
-		  		$("#alertMsg").html("移除失败!").show(500);
-		  	}
-	    });
+	function removeProject(thisObj){
+		var confirm = confirm("确定要删除该项目么，这将同时删除该项目所有action配置！");
+		if(confirm){
+			$.ajax({
+				url:$(thisObj).attr("val"),
+				type:"post",
+				success:function(resp){
+					if(resp=='0000'){
+						$("#alertMsg").html("移除成功!").show(500);
+						setTimeCloseMsg(1000);
+					}else{
+						$("#alertMsg").html("移除失败!").show(500);
+					}
+			  	},
+			  	error:function(){
+			  		$("#alertMsg").html("移除失败!").show(500);
+			  	}
+		    });
+		}
 	}
 	
-	function reLoginSession(){
-		var _url = "<%=path%>/zbox.do?m=updateSession";
-		location.replace(location.href);
+	
+	function getProjects(){
+		var _url = "<%=path%>/zbox.do?m=getProjects";
 		$.ajax({
 			url:_url,
 			type:"post",
 			success:function(resp){
-				if(resp=='0000'){
-					$("#alertMsg").html("成功更新session！").show(500);
-					setTimeCloseMsg(1000);
-				}else{
-					$("#alertMsg").html("重新登录失败!").show(500);
+				resp = resp.replace(/\\/g,"");
+				resp = resp.replace(/"{/g,"{");
+				resp = resp.replace(/}"/g,"}");
+				//console.log(resp);
+				obj  = $.parseJSON(resp);
+				var options = "";
+				for (var Key in obj.data.projects){
+					project = obj.data.projects[Key];
+					options += "<option value='"+project+"'>"+project+"</option>\n";
+			    }
+				if(options == ""){
+					options = "<option value=''>暂无项目，请登录禅道创建项目</option>\n";
 				}
+				$("#zboxProject").html(options);
 		  	},
 		  	error:function(){
+		  		$("#zboxProjectAlert").show();
 		  	}
 	    });
 	}
+	
 	
 	function setTimeCloseMsg(time){
 		setTimeout(function(){
@@ -310,9 +271,6 @@
 		$("#actionForm").addClass("hidden");
 	}
 	
-	function chooseProjectAction(thisObj){
-		location.replace("zboxActionManager?project="+thisObj.value);
-	}
 	
 	</script>
 	</body>

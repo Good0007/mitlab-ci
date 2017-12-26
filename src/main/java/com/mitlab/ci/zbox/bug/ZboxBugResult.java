@@ -1,11 +1,10 @@
 package com.mitlab.ci.zbox.bug;
 
+import java.io.IOException;
+
 import com.mitlab.ci.zbox.ZboxException;
 import com.mitlab.ci.zbox.ZboxResult;
 import com.mitlab.ci.zbox.ZboxUtil;
-import com.mitlab.ci.zbox.task.ZboxTask;
-
-import java.io.IOException;
 
 public class ZboxBugResult extends ZboxResult {
     private String data;

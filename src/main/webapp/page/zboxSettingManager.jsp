@@ -92,14 +92,14 @@
 							<fieldset>
 							<legend>基础配置</legend>
 							<div class="control-group">
-								<label class="control-label" for="input01">禅道地址</label>
+								<label class="control-label" for="input01"><span class="red">*</span> 禅道地址</label>
 								<div class="controls">
 									<input id="input01"  class="input-xlarge" type="text" name="zboxUrl" value="${baseSetting.zboxUrl}" 
 									placeholder="请输入禅道地址  例:http://hostname:port/zentao" />
 								</div>
 							</div>
 							<div class="control-group">
-								<label class="control-label" for="input02">禅道帐号</label>
+								<label class="control-label" for="input02"><span class="red">*</span> 禅道帐号</label>
 								<div class="controls">
 									<input id="input02"  class="input-xlarge" type="text" name="zboxUser" value="${baseSetting.zboxUser}" 
 									placeholder="请输入禅道管理员帐号" />
@@ -107,7 +107,7 @@
 							</div>
 							
 							<div class="control-group">
-								<label class="control-label" for="input03">禅道密码</label>
+								<label class="control-label" for="input03"><span class="red">*</span> 禅道密码</label>
 								<div class="controls">
 									<input id="input03"  class="input-xlarge" type="text" name="zboxPassword" value="${baseSetting.zboxPassword}" 
 									placeholder="请输入禅道管理员密码" />
@@ -115,14 +115,14 @@
 							</div>
 							
 							<div class="control-group">
-								<label class="control-label" for="input04">gitlab地址</label>
+								<label class="control-label" for="input04"><span class="red">*</span> gitlab地址</label>
 								<div class="controls">
 									<input id="input04"  class="input-xlarge" type="text" name="gitlabUrl" value="${baseSetting.gitlabUrl}" 
 									placeholder="请输入gitlab地址 例:http://hostname:port" />
 								</div>
 							</div>
 							<div class="control-group">
-								<label class="control-label" for="input05">gitlab令牌</label>
+								<label class="control-label" for="input05"><span class="red">*</span> gitlab令牌</label>
 								<div class="controls">
 									<input id="input05"  class="input-xlarge" type="text" name="gitlabToken" value="${baseSetting.gitlabToken}" 
 									placeholder="请输入gitlab令牌" />

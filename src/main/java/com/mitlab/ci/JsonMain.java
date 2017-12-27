@@ -10,7 +10,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 public class JsonMain {
     public static void main(String[] args ) throws Exception {
-        /*CloseableHttpClient httpclient = HttpClients.createDefault();
+        CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet("http://192.168.60.50:26080/zentao/project.json");
         CloseableHttpResponse response1 = httpclient.execute(httpGet);
         try {
@@ -18,13 +18,10 @@ public class JsonMain {
             HttpEntity entity1 = response1.getEntity();
             ObjectMapper om = new ObjectMapper();
             ZboxSessionResult zr = om.readValue(entity1.getContent(), ZboxSessionResult.class);
-            //System.out.println(zr.getStatus());
+            System.out.println(zr.getStatus());
             //System.out.println(zr.getSession().getSessionID());
         } finally {
             response1.close();
-        }*/
-    	String aa = "data\":\"{\"title\":\"\\u9879\\u76ee\\u9996\\u9875\",\"projects\":{\"4\":\"mitlab-test\",\"3\":\"ddd\",\"2\":\"fff\"}";
-    	String b = aa.substring(aa.indexOf("projects\":") ,aa.indexOf("project") );
-    	System.out.println(b);
+        }
     }
 }

@@ -119,7 +119,7 @@
 										<%-- <td>
 											${obj.pid }
 										</td> --%>
-										<td>
+										<td class="ztProject">
 											${obj.zboxProject }
 										</td>
 										<td>
@@ -160,7 +160,7 @@
 								</div>
 							</div>
 							<div class="control-group">
-								<label class="control-label" for="input02">gitlab项目[组/项目]</label>
+								<label class="control-label" for="input02"><span class="red">*</span> gitlab项目[组/项目]</label>
 								<div class="controls">
 									<input type="text" class="input-xlarge" name="gitlabProject"  id="input02" placeholder="请输入 gitlab项目[组/项目]"/>
 								</div>
@@ -185,6 +185,20 @@
 		getProjects();
 	});
 	function addProject(thisObj){
+		var form = $("#actionForm")[0];
+		var flag = false;
+		if((form.gitlabProject.value).trim() == ""){
+			$("#alertMsg").html("请填写gitlab项目！").removeClass("alert-info").addClass("alert-danger").show(500);
+			return false;
+		}
+		$(".ztProject").each(function(index , domEle){
+			if($(domEle).html().trim() == form.zboxProject.value){
+				$("#alertMsg").html("该禅道项目已存在，请不要重复添加！").removeClass("alert-info").addClass("alert-danger").show(500);
+				flag = true;
+				return;
+			}
+		})
+		if(flag) return false;
 		var _url = "<%=path%>/zboxProjectManager?m=addProject";
 		var btn=$(thisObj);
 		$.ajax({
@@ -211,8 +225,8 @@
 	}
 	
 	function removeProject(thisObj){
-		var confirm = confirm("确定要删除该项目么，这将同时删除该项目所有action配置！");
-		if(confirm){
+		var flag = confirm("确定要删除该项目么，这将同时删除该项目所有action配置！");
+		if(flag){
 			$.ajax({
 				url:$(thisObj).attr("val"),
 				type:"post",

@@ -8,6 +8,38 @@ import java.sql.SQLException;
 import com.mitlab.ci.zbox.ZboxException;
 
 public class InitDao extends BaseDao{
+	
+	 /*public void test(){
+		 String dropTable = "drop table t_issue";
+   	  	 String createIssueTable = "create cached table if not exists t_issue("
+     			+ "id varchar(32) primary key,"
+     			+ "zid varchar(32), "
+     			+ "gid varchar(32), "
+     			+ "giid varchar(32),"
+     			+ "assign_to varchar(32), "
+     			+ "project varchar(128))";
+   	  
+	    	 Connection conn = null;
+	         PreparedStatement stmt = null; 
+	         PreparedStatement stmt2 = null; 
+			 try {
+				 conn = h2Pool.getConnection();
+				 stmt = conn.prepareStatement(dropTable);
+				 stmt.execute();
+				 stmt2 = conn.prepareStatement(createIssueTable);
+				 stmt2.execute();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}finally {
+	            close(stmt);
+	            close(stmt2);
+	            close(conn);
+	        }
+	}
+	
+      public static void main(String args[]){
+    	  new InitDao().test();
+      }*/
 
 	   private void initBaseSetting(){
 	    	/**
@@ -73,7 +105,8 @@ public class InitDao extends BaseDao{
     			+ "id varchar(32) primary key,"
     			+ "zid varchar(32), "
     			+ "gid varchar(32), "
-    			+ "giid varchar(32), "
+    			+ "giid varchar(32),"
+    			+ "assign_to varchar(32), "
     			+ "project varchar(128))";
     	//action和label映射表
     	String createActionMappingTable = "create cached table if not exists t_action_mapping("

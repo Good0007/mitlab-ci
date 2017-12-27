@@ -29,7 +29,7 @@ public class IssueMappingDao extends BaseDao{
         List<IssueMappingEntity> list = new ArrayList<IssueMappingEntity>();
         try {
             conn = h2Pool.getConnection();
-            stmt = conn.prepareStatement("select id,zid,gid,giid, project from t_issue");
+            stmt = conn.prepareStatement("select id,zid,gid,giid, project ,assign_to from t_issue");
             rs = stmt.executeQuery();
             while (rs.next()) {
             	IssueMappingEntity issue = new IssueMappingEntity();
@@ -38,6 +38,7 @@ public class IssueMappingDao extends BaseDao{
             	issue.setGid(rs.getString("gid"));
             	issue.setGiid(rs.getLong("giid"));
             	issue.setProject(rs.getString("project"));
+            	issue.setAssignTo(rs.getString("assign_to"));
             	list.add(issue);
             }
         } catch (SQLException e) {
@@ -50,21 +51,44 @@ public class IssueMappingDao extends BaseDao{
         return list;
 	}
 	
+	/*
+	 * 更新指派信息
+	 */
+	public void updateAssignTo(String zid ,String project, String assignTo){
+		String sql = "update t_issue set assign_to=? where zid = ? and project=?";
+		Connection conn = null;
+        PreparedStatement stmt = null;
+        try {
+            conn = h2Pool.getConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, assignTo);
+            stmt.setString(2, zid);
+            stmt.setString(3, project);
+            stmt.execute();
+        } catch (SQLException e) {
+            throw new ZboxException("update issue mapping error", e);
+        } finally {
+            close(stmt);
+            close(conn);
+        }   
+	}
+	
+	
 	/**
 	 * 通过zid和项目查询
 	 * @param cacheId
 	 * @param project
 	 * @return
 	 */
-	public IssueMappingEntity findIssueMapping(String cacheId ,String project){
+	public IssueMappingEntity findIssueMapping(String zid ,String project){
 		Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
         IssueMappingEntity issue = null;
         try {
             conn = h2Pool.getConnection();
-            stmt = conn.prepareStatement("select zid,gid, giid, project from t_issue where zid = ? and project=?");
-            stmt.setString(1, cacheId);
+            stmt = conn.prepareStatement("select zid,gid, giid, project,assign_to from t_issue where zid = ? and project=?");
+            stmt.setString(1, zid);
             stmt.setString(2, project);
             rs = stmt.executeQuery();
             if (rs.next()) {
@@ -73,6 +97,7 @@ public class IssueMappingDao extends BaseDao{
             	issue.setGid(rs.getString("gid"));
             	issue.setGiid(rs.getLong("giid"));
             	issue.setProject(rs.getString("project"));
+            	issue.setAssignTo(rs.getString("assign_to"));
             }
         } catch (SQLException e) {
             throw new ZboxException("query issue mapping error", e);
@@ -91,24 +116,25 @@ public class IssueMappingDao extends BaseDao{
 	 * @param project
 	 * @param issueResponse
 	 */
-	public void setIssueMapping2DB(IssueRequest issueRequest, String cacheId, String project, IssueResponse issueResponse) {
+	public void setIssueMapping2DB(IssueRequest issueRequest, String zid, String project,String assignTo, IssueResponse issueResponse) {
         Connection conn = null;
         PreparedStatement stmt = null;
         IssueMappingEntity issue = new IssueMappingEntity();
-        issue.setZid(cacheId);
+        issue.setZid(zid);
         issue.setGid(issueResponse.getId());
         issue.setGiid(issueResponse.getIid());
         issue.setProject(project);
+        issue.setAssignTo(assignTo);
         try {
             conn = h2Pool.getConnection();
-            stmt = conn.prepareStatement("insert into t_issue(id, zid, gid , giid, project) values(?,?, ?, ?, ?)");
+            stmt = conn.prepareStatement("insert into t_issue(id, zid, gid , giid, project ,assign_to) values(?,?, ?, ?,?,?)");
             stmt.setString(1, issue.getId());
             stmt.setString(2, issue.getZid());
             stmt.setString(3, issue.getGid());
             stmt.setString(4, Long.toString(issue.getGiid()));
-            //stmt.setString(5, Long.toString(issueResponse.getProjectId()));
             stmt.setString(5, issue.getProject());
-            stmt.executeUpdate();
+            stmt.setString(6, issue.getAssignTo());
+            stmt.execute();
             if (logger.isLoggable(Level.INFO)) {
                 logger.info("setIssueMapping2DB : "+issue.toString());
             }

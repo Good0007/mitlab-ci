@@ -6,9 +6,17 @@ public class IssueMappingEntity {
 	 * uuid主键
 	 */
 	private String id = BaseUtil.getUuid();
+	/**
+	 * bug+issueId/task+issueId
+	 */
 	private String zid = null;
 	private String gid = null;
 	private long giid = 1L;
+	/**
+	 * 记录当前任务指派的用户
+	 */
+	private String assignTo = null;
+	
 	/**
 	 * 对应的gitlab项目
 	 */
@@ -44,8 +52,16 @@ public class IssueMappingEntity {
 	public void setId(String id) {
 		this.id = id;
 	}
+	public String getAssignTo() {
+		return assignTo;
+	}
+	public void setAssignTo(String assignTo) {
+		this.assignTo = assignTo;
+	}
 	@Override
 	public String toString() {
-		return "IssueMappingEntity [zid=" + zid + ", gid=" + gid + ", giid=" + giid + ", project=" + project + "]";
+		return "IssueMappingEntity [id=" + id + ", zid=" + zid + ", gid=" + gid + ", giid=" + giid + ", assignTo="
+				+ assignTo + ", project=" + project + "]";
 	}
+	
 }

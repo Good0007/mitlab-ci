@@ -155,33 +155,16 @@ public class ZboxServlet extends HttpServlet {
                  issueRequest.setLabels(action.getGitlabLabel());
              }
         }
-        /*if (gitlabAction != null && !"".equals(gitlabAction.trim())) {
-            String[] statusLabelArray = gitlabAction.split(",");
-            if (!"".equals(statusLabelArray[0])) {
-                issueRequest.setStateEvent(statusLabelArray[0]);
-            }
-            if (statusLabelArray.length > 1 && !"".equals(statusLabelArray[1])) {
-                issueRequest.setLabels(statusLabelArray[1]);
-            }
-        }*/
     }
 
     private void onTaskReceive(ZboxNotify notify) {
         ZboxTask task = ZboxUtil.getInstance().getTask(notify.getObjectId(), session);
         IssueRequest issueRequest = new IssueRequest();
-        GitlabUser gitlabUser = GitlabUtil.getInstance().getUserDetails(task.getTask().getAssignedTo(), this.session.getSettingInfo().getGitlabToken());
-        if (gitlabUser != null) {
-            issueRequest.setAssigneeIds(new Long[] {gitlabUser.getId()});
-        }
+        //当前指派信息
+        String assignToUser = task.getTask().getAssignedTo();
         ZboxTaskDetails taskDetails = task.getTask();
         String cacheId = "Task-" + taskDetails.getId();
-        issueRequest.setId(cacheId);
-        String title = task.getTitle();
-        title = title.substring(title.indexOf(" "), title.lastIndexOf("/"));
-        issueRequest.setTitle(title);
-        issueRequest.setDescription(taskDetails.getDesc());
         String zboxProject = task.getProject().getName();
-        setIssueStatus(notify, issueRequest , zboxProject);
         String gitlabProject = projectDao.findGitlabProjectByZboxProject(zboxProject);
         if(gitlabProject==null){
         	logger.info("onTaskReceive - ERROR：请检查GitlabProject名称是否配置正确！");
@@ -191,6 +174,11 @@ public class ZboxServlet extends HttpServlet {
         IssueMappingEntity issue =  issueDao.findIssueMapping(cacheId , gitlabProject);
         if(issue!=null){
         	foundIssueMapping = true;
+        	if("closed".equals(assignToUser)){
+        		task.getTask().setAssignedTo(issue.getAssignTo());
+        	}else{
+        		issueDao.updateAssignTo(cacheId, gitlabProject, assignToUser);
+        	}
         	issueRequest.setId(issue.getGid());
             issueRequest.setIssueIid(issue.getGiid());
             //gitlabProject = issue.getProject();
@@ -198,11 +186,21 @@ public class ZboxServlet extends HttpServlet {
                 logger.info("onTaskReceive - issueMapping : " +issue.toString());
             }
         }
+        GitlabUser gitlabUser = GitlabUtil.getInstance().getUserDetails(task.getTask().getAssignedTo(), this.session.getSettingInfo().getGitlabToken());
+        if (gitlabUser != null) {
+            issueRequest.setAssigneeIds(new Long[] {gitlabUser.getId()});
+        }
+        issueRequest.setId(cacheId);
+        String title = task.getTitle();
+        title = title.substring(title.indexOf(" "), title.lastIndexOf("/"));
+        issueRequest.setTitle(title);
+        issueRequest.setDescription(taskDetails.getDesc());
+        setIssueStatus(notify, issueRequest , zboxProject);
         String gitlabToken = this.session.getSettingInfo().getGitlabToken();
         IssueResponse issueResponse = GitlabUtil.getInstance().createIssue(gitlabProject, issueRequest, gitlabToken);
         if(issueResponse!=null){
         	 if (!foundIssueMapping) {
-                 issueDao.setIssueMapping2DB(issueRequest, cacheId, gitlabProject, issueResponse);
+                 issueDao.setIssueMapping2DB(issueRequest, cacheId, gitlabProject,assignToUser, issueResponse);
              }
         }else{
         	logger.info("ERROR：请检查GitlabProject名称是否配置正确！");
@@ -214,18 +212,11 @@ public class ZboxServlet extends HttpServlet {
     	ZboxBug bug = ZboxUtil.getInstance().getBug(notify.getObjectId(), session);
         IssueRequest issueRequest = new IssueRequest();
         String gitlabToken = this.session.getSettingInfo().getGitlabToken();
-        GitlabUser gitlabUser = GitlabUtil.getInstance().getUserDetails(bug.getBug().getAssignedTo(), gitlabToken);
-        if (gitlabUser != null) {
-            issueRequest.setAssigneeIds(new Long[] {gitlabUser.getId()});
-        }
+        //当前指派信息
+        String assignToUser = bug.getBug().getAssignedTo();
         ZboxBugDetails bugDetails = bug.getBug();
         String cacheId = "Bug-" + bugDetails.getId();
-        issueRequest.setId(cacheId);
-        String title = bugDetails.getTitle();
-        issueRequest.setTitle(title);
-        issueRequest.setDescription(bugDetails.getSteps());
         String zboxProject = bug.getBug().getProjectName();
-        setIssueStatus(notify, issueRequest ,zboxProject);
         String gitlabProject = projectDao.findGitlabProjectByZboxProject(zboxProject);
         if(gitlabProject==null){
         	logger.info("ERROR：请检查禅道项目名称是否配置正确！");
@@ -233,19 +224,36 @@ public class ZboxServlet extends HttpServlet {
         }
         boolean foundIssueMapping = false;
         IssueMappingEntity issue =  issueDao.findIssueMapping(cacheId , gitlabProject);
-        if(issue!=null){
-        	foundIssueMapping = true;
+    	if(issue!=null){
+	        if("closed".equals(assignToUser)){
+	        	//查询当前指派信息
+	        	bug.getBug().setAssignedTo(issue.getAssignTo());
+	    	}else{
+	    		//更新指派信息
+	    		issueDao.updateAssignTo(cacheId, gitlabProject, assignToUser);
+	    	}
+	        foundIssueMapping = true;
         	issueRequest.setId(issue.getGid());
             issueRequest.setIssueIid(issue.getGiid());
-            //gitlabProject = issue.getProject();
         	if (logger.isLoggable(Level.INFO)) {
         		logger.info("onBugReceive - issueMapping : " +issue.toString());
             }
+    	}
+        GitlabUser gitlabUser = GitlabUtil.getInstance().getUserDetails(bug.getBug().getAssignedTo(), gitlabToken);
+        if (gitlabUser != null) {
+            issueRequest.setAssigneeIds(new Long[] {gitlabUser.getId()});
         }
+        issueRequest.setId(cacheId);
+        String title = bugDetails.getTitle();
+        issueRequest.setTitle(title);
+        issueRequest.setDescription(bugDetails.getSteps());
+        //设置issue 状态 和label
+        setIssueStatus(notify, issueRequest ,zboxProject);
+        //IssueMappingEntity issue =  issueDao.findIssueMapping(cacheId , gitlabProject);
         IssueResponse issueResponse = GitlabUtil.getInstance().createIssue(gitlabProject, issueRequest, gitlabToken);
         if(issueResponse!=null){
         	if (!foundIssueMapping) {
-                issueDao.setIssueMapping2DB(issueRequest, cacheId, gitlabProject, issueResponse);
+                issueDao.setIssueMapping2DB(issueRequest, cacheId, gitlabProject,assignToUser,issueResponse);
             }
         }else{
         	logger.info("ERROR：请检查禅道项目名称是否配置正确！");

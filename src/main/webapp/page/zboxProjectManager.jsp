@@ -252,7 +252,7 @@
 			url:_url,
 			type:"post",
 			success:function(resp){
-				resp = resp.replace(/\\/g,"");
+				resp = resp.replace(/\\"/g,"\"");
 				resp = resp.replace(/"{/g,"{");
 				resp = resp.replace(/}"/g,"}");
 				//console.log(resp);
@@ -260,6 +260,10 @@
 				var options = "";
 				for (var Key in obj.data.projects){
 					project = obj.data.projects[Key];
+					if(project.indexOf("\\u")!=-1){
+						//中文转码
+						project = reconvert(project);
+					}
 					options += "<option value='"+project+"'>"+project+"</option>\n";
 			    }
 				if(options == ""){
@@ -285,6 +289,37 @@
 		$("#actionForm").addClass("hidden");
 	}
 	
+	
+	
+	function unicode(str){
+        var value='';
+        for (var i = 0; i < str.length; i++) {
+            value += '\\u' + left_zero_4(parseInt(str.charCodeAt(i)).toString(16));
+        }
+        return value;
+    }
+    function left_zero_4(str) {
+        if (str != null && str != '' && str != 'undefined') {
+            if (str.length == 2) {
+                return '00' + str;
+            }
+        }
+        return str;
+    }
+    
+    //Unicode转中文汉字、ASCII转换Unicode
+    function reconvert(str){ 
+        str = str.replace(/(\\u)(\w{1,4})/gi,function($0){ 
+            return (String.fromCharCode(parseInt((escape($0).replace(/(%5Cu)(\w{1,4})/g,"$2")),16))); 
+        }); 
+        str = str.replace(/(&#x)(\w{1,4});/gi,function($0){ 
+            return String.fromCharCode(parseInt(escape($0).replace(/(%26%23x)(\w{1,4})(%3B)/g,"$2"),16)); 
+        }); 
+        str = str.replace(/(&#)(\d{1,6});/gi,function($0){ 
+            return String.fromCharCode(parseInt(escape($0).replace(/(%26%23)(\d{1,6})(%3B)/g,"$2"))); 
+        }); 
+        return str; 
+    }
 	
 	</script>
 	</body>

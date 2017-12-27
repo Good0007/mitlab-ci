@@ -42,8 +42,8 @@ public class ZboxProjectManagerServlet extends HttpServlet {
 				return;
 			}
 			ProjectEntity project = new ProjectEntity();
-			project.setZboxProject(zboxProject);
-			project.setGitlabProject(gitlabProject);
+			project.setZboxProject(new String(zboxProject.getBytes("ISO8859-1"),"UTF-8"));
+			project.setGitlabProject(new String(gitlabProject.getBytes("ISO8859-1"),"UTF-8"));
 			if(projectsDao.addProject(project)){
 				response.getWriter().print("0000");
 			}else{

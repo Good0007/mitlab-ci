@@ -30,7 +30,9 @@ public class ZboxProjectManagerServlet extends HttpServlet {
 		String method = request.getParameter("m");
 		if("addProject".equals(method)){
 			String zboxProject = request.getParameter("zboxProject");
+			String zboxProjectId = request.getParameter("zboxProjectId");
 			String gitlabProject = request.getParameter("gitlabProject");
+			String planSync = request.getParameter("planSync");
 			if(zboxProject==null || "".equals(zboxProject)){
 				logger.info("zboxProject 不得为空！");
 				response.getWriter().print("0001");
@@ -44,6 +46,8 @@ public class ZboxProjectManagerServlet extends HttpServlet {
 			ProjectEntity project = new ProjectEntity();
 			project.setZboxProject(new String(zboxProject.getBytes("ISO8859-1"),"UTF-8"));
 			project.setGitlabProject(new String(gitlabProject.getBytes("ISO8859-1"),"UTF-8"));
+			project.setZboxProjectId(zboxProjectId);
+			project.setPlanSync(planSync);
 			if(projectsDao.addProject(project)){
 				response.getWriter().print("0000");
 			}else{
@@ -51,40 +55,10 @@ public class ZboxProjectManagerServlet extends HttpServlet {
 				response.getWriter().print("0001");
 				return;
 			}
-		}else if("updateProject".equals(method)){
-			String pid = request.getParameter("pid");
-			String zboxProject = request.getParameter("zboxProject");
-			String gitlabProject = request.getParameter("gitlabProject");
-			if(pid==null || "".equals(pid)){
-				logger.info("pid 不得为空！");
-				response.getWriter().print("0001");
-				return;
-			}
-			if(zboxProject==null || "".equals(zboxProject)){
-				logger.info("zboxProject 不得为空！");
-				response.getWriter().print("0001");
-				return;
-			}
-			if(gitlabProject==null || "".equals(gitlabProject)){
-				logger.info("gitlabProject 不得为空！");
-				response.getWriter().print("0001");
-				return;
-			}
-			ProjectEntity project = new ProjectEntity();
-			project.setPid(pid);
-			project.setZboxProject(zboxProject);
-			project.setGitlabProject(gitlabProject);
-			if(projectsDao.updateProject(project)){
-				response.getWriter().print("0000");
-			}else{
-				logger.info("project 更新失败！");
-				response.getWriter().print("0001");
-				return;
-			}
 		}else if("removeProject".equals(method)){
-			String pid = request.getParameter("pid");
-			ProjectEntity project = projectsDao.getProjectByPid(pid);
-			if(projectsDao.deleteProject(pid)){
+			String projectId = request.getParameter("projectId");
+			ProjectEntity project = projectsDao.getProjectByProjectId(projectId);
+			if(projectsDao.deleteByProjectId(projectId)){
 				//删除该项目的action 
 				if(project!=null) actionMappingDao.removeByProject(project.getZboxProject());
 				response.getWriter().print("0000");
@@ -92,6 +66,15 @@ public class ZboxProjectManagerServlet extends HttpServlet {
 				 logger.info("删除project错误！");
 				 response.getWriter().print("0001");
 			 }
+		}else if("updatePlanSync".equals(method)){
+			String pid = request.getParameter("pid");
+			String planSync = request.getParameter("planSync");
+			if(projectsDao.updatePlanSync(planSync, pid)){
+				response.getWriter().print("0000");
+			}else{
+				logger.info("updatePlanSync 更新失败！");
+				response.getWriter().print("0001");
+			}
 		}else{
 			request.setAttribute("projectList", projectsDao.getAllProjects());
 			request.getRequestDispatcher("/page/zboxProjectManager.jsp").forward(request, response);

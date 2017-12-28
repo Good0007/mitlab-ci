@@ -2,6 +2,8 @@ package com.mitlab.ci;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,13 +15,18 @@ import javax.servlet.http.HttpServletResponse;
 import com.mitlab.ci.gitlab.GitlabUtil;
 import com.mitlab.ci.gitlab.issue.IssueRequest;
 import com.mitlab.ci.gitlab.issue.IssueResponse;
+import com.mitlab.ci.gitlab.milestone.MilestoneRequest;
+import com.mitlab.ci.gitlab.milestone.MilestoneResponse;
 import com.mitlab.ci.gitlab.user.GitlabUser;
 import com.mitlab.ci.manager.ActionMappingEntity;
 import com.mitlab.ci.manager.IssueMappingEntity;
+import com.mitlab.ci.manager.ProductPlanEntity;
+import com.mitlab.ci.manager.ProjectEntity;
 import com.mitlab.ci.manager.SettingEntity;
 import com.mitlab.ci.manager.dao.ActionMappingDao;
 import com.mitlab.ci.manager.dao.InitDao;
 import com.mitlab.ci.manager.dao.IssueMappingDao;
+import com.mitlab.ci.manager.dao.ProductPlanDao;
 import com.mitlab.ci.manager.dao.ProjectDao;
 import com.mitlab.ci.manager.dao.SettingDao;
 import com.mitlab.ci.zbox.ZboxNotify;
@@ -27,6 +34,9 @@ import com.mitlab.ci.zbox.ZboxSession;
 import com.mitlab.ci.zbox.ZboxUtil;
 import com.mitlab.ci.zbox.bug.ZboxBug;
 import com.mitlab.ci.zbox.bug.ZboxBugDetails;
+import com.mitlab.ci.zbox.product.plan.ZboxProductplanResult;
+import com.mitlab.ci.zbox.project.ZboxProductDetails;
+import com.mitlab.ci.zbox.project.ZboxProjectResult;
 import com.mitlab.ci.zbox.task.ZboxTask;
 import com.mitlab.ci.zbox.task.ZboxTaskDetails;
 
@@ -48,6 +58,7 @@ public class ZboxServlet extends HttpServlet {
     private static SettingDao settingDao = null;
     private static ActionMappingDao actionMappingDao = null;
     private static ProjectDao projectDao = null;
+    private static ProductPlanDao planDao = null;
     private long zboxReloginTime;
     private long zboxLastAccessTime;
 
@@ -66,6 +77,7 @@ public class ZboxServlet extends HttpServlet {
     	settingDao = new SettingDao();
     	actionMappingDao = new ActionMappingDao();
     	projectDao = new ProjectDao();
+    	planDao = new ProductPlanDao();
     	if(!initDao.initDataTable()){
     		logger.info("初始化数据表错误！");
     	}
@@ -129,9 +141,14 @@ public class ZboxServlet extends HttpServlet {
                 }
             }
             if ("task".equals(notify.getObjectType())) {
-                onTaskReceive(notify);
+                //创建任务
+            	onTaskReceive(notify);
             } else if ("bug".equals(notify.getObjectType())) {
+            	//创建bug
             	onBugReceive(notify);
+            } else if("productplan".equals(notify.getObjectType())){
+            	//创建计划
+            	onProductplanReceive(notify);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -155,6 +172,65 @@ public class ZboxServlet extends HttpServlet {
                  issueRequest.setLabels(action.getGitlabLabel());
              }
         }
+    }
+    
+    /**
+     * 同步禅道产品计划到Gitlab的里程碑
+     * @param notify
+     */
+    private void onProductplanReceive(ZboxNotify notify){
+    	/**
+    	 * @TODO
+    	 *  1.查询当创建的计划信息
+    	 *  2.根据关联的项目查询t_project是否需要同步计划到指定项目的里程碑
+    	 *  3.封装参数 ，调用Gitlab Aip 创建里程碑
+    	 */
+    	ZboxProductplanResult plan = ZboxUtil.getInstance().getProductPlan(notify.getObjectId(), session);
+    	List<ProjectEntity> projectList =  projectDao.getProjectsByPlanSync("1");
+    	if(projectList!=null){
+    		for(ProjectEntity project : projectList){
+    			ZboxProjectResult projectInfo = ZboxUtil.getInstance().getProjectByPid(project.getZboxProjectId(), session);
+    			//获取该项目 关联的产品 Key 为产品ID
+    			if(projectInfo.getProducts()!=null && projectInfo.getProducts().size()>0){
+    				for (Map.Entry<String, ZboxProductDetails> entry : projectInfo.getProducts().entrySet()) {  
+    					  //当前产品Id
+    					  String productId = plan.getPlan().getProduct().getId();
+    					  if(productId.equals(entry.getKey())){
+    						  //封装参数，创建当前项目对应的里程碑
+    						  MilestoneRequest milestone = new MilestoneRequest();
+    						  String title = plan.getPlan().getTitle();
+    						  title = title.substring(title.indexOf(" "), title.lastIndexOf("/"));
+    						  milestone.setId(notify.getObjectId());
+    						  milestone.setTitle(title);
+    						  milestone.setStartDate(plan.getPlan().getPlan().getBegin());
+    						  milestone.setDueDate(plan.getPlan().getPlan().getEnd());
+    						  milestone.setDescription(plan.getPlan().getPlan().getDesc());
+    						  
+    						  ProductPlanEntity planInfo = planDao.findOnePlanMapping(notify.getObjectId(), productId, project.getGitlabProject());
+    						  if( planInfo!=null ){
+    							 //更新
+    							  milestone.setMilestoneId(planInfo.getMilestoneId());
+    							  //milestone.setId(planInfo.getMid());
+    							  logger.info("当前产品："+entry.getKey() +" -- 为关联的项目 ["+project.getGitlabProject()+"] 更新里程碑:"+milestone.toString());
+    							  logger.info("更新计划："+planInfo.toString());
+    						  }
+							  MilestoneResponse response =  GitlabUtil.getInstance().
+									 createMilestone(project.getGitlabProject(), milestone, this.session.getSettingInfo().getGitlabToken());
+    						  if(response!=null){
+    							  if(planInfo==null ){
+           							  planDao.addPlanMapping2DB(notify.getObjectId(),plan.getPlan().getProduct().getId(),project.getGitlabProject(),response.getIid(),response.getId());
+           							  logger.info("当前产品："+entry.getKey() +" -- 为关联的项目 ["+project.getGitlabProject()+"] 创建里程碑:"+milestone.toString());
+        						  }
+    							  logger.info("MilestoneResponse : " +response.toString());
+    						  }
+    						
+    					  }
+    				}  
+    			}
+    		}
+    	}
+    	//projectDao.getProjectByProjectId(plan.getPlan());
+    	//createMilestone
     }
 
     private void onTaskReceive(ZboxNotify notify) {

@@ -85,8 +85,9 @@ public class ZboxNotify {
     public void setText(String text) {
         this.text = text;
     }
+    
 
-    @Override
+	@Override
     public String toString() {
         return "ZboxNotify{" +
                 "objectType='" + objectType + '\'' +

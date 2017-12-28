@@ -4,13 +4,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import com.mitlab.ci.zbox.ZboxException;
 
 public class InitDao extends BaseDao{
 	
-	 /*public void test(){
-		 String dropTable = "drop table t_issue";
+	 public void test(){
+		 String dropTable = "drop table t_product_plan";
    	  	 String createIssueTable = "create cached table if not exists t_issue("
      			+ "id varchar(32) primary key,"
      			+ "zid varchar(32), "
@@ -18,7 +19,20 @@ public class InitDao extends BaseDao{
      			+ "giid varchar(32),"
      			+ "assign_to varchar(32), "
      			+ "project varchar(128))";
-   	  
+   	//计划-里程碑映射表
+     	String  createPlanMappingTable = "create cached table if not exists t_product_plan("
+     			+ "uuid varchar(32) primary key, "
+     			+ "product_id varchar(32), "
+     			+ "gitlab_project varchar(128),"
+     			+ "plan_id varchar(32),"
+     			+ "milestone_id varchar(32),"
+     			+ "mid varchar(32) )";
+   	  /*String  createProjectMappingTable = "create cached table if not exists t_project("
+  			+ "pid varchar(32) primary key, "
+  			+ "zbox_project varchar(128), "
+  			+ "gitlab_project varchar(128),"
+  			+ "zbox_project_id varchar(32),"
+  			+ "plan_sync varchar(2))";*/
 	    	 Connection conn = null;
 	         PreparedStatement stmt = null; 
 	         PreparedStatement stmt2 = null; 
@@ -26,7 +40,7 @@ public class InitDao extends BaseDao{
 				 conn = h2Pool.getConnection();
 				 stmt = conn.prepareStatement(dropTable);
 				 stmt.execute();
-				 stmt2 = conn.prepareStatement(createIssueTable);
+				 stmt2 = conn.prepareStatement(createPlanMappingTable);
 				 stmt2.execute();
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -39,7 +53,7 @@ public class InitDao extends BaseDao{
 	
       public static void main(String args[]){
     	  new InitDao().test();
-      }*/
+      }
 
 	   private void initBaseSetting(){
 	    	/**
@@ -119,32 +133,35 @@ public class InitDao extends BaseDao{
     	String  createProjectMappingTable = "create cached table if not exists t_project("
     			+ "pid varchar(32) primary key, "
     			+ "zbox_project varchar(128), "
-    			+ "gitlab_project varchar(128))";
+    			+ "gitlab_project varchar(128),"
+    			+ "zbox_project_id varchar(32),"
+    			+ "plan_sync varchar(2))";
+    	//计划-里程碑映射表
+    	String  createPlanMappingTable = "create cached table if not exists t_product_plan("
+    			+ "uuid varchar(32) primary key, "
+    			+ "product_id varchar(32), "
+    			+ "gitlab_project varchar(128),"
+    			+ "plan_id varchar(32),"
+    			+ "milestone_id varchar(32),"
+    			+ "mid varchar(32) )";
         //h2Pool = JdbcConnectionPool.create("jdbc:h2:~/mitlab_ci", "sa", "sa");
         Connection conn = null;
-        PreparedStatement stmt1 = null;
-        PreparedStatement stmt2 = null;
-        PreparedStatement stmt3 = null;
-        PreparedStatement stmt4 = null;
+        Statement stmt = null;
         try {
             conn = h2Pool.getConnection();
-            stmt1 = conn.prepareStatement(createSettingTable);
-            stmt1.execute();
-            stmt2 = conn.prepareStatement(createIssueTable);
-            stmt2.execute();
-            stmt3 = conn.prepareStatement(createActionMappingTable);
-            stmt3.execute();
-            stmt4= conn.prepareStatement(createProjectMappingTable);
-            stmt4.execute();
+            stmt = conn.createStatement(); 
+            stmt.addBatch(createSettingTable);
+            stmt.addBatch(createIssueTable);
+            stmt.addBatch(createActionMappingTable);
+            stmt.addBatch(createProjectMappingTable);
+            stmt.addBatch(createPlanMappingTable);
+            stmt.executeBatch();
             initBaseSetting();
         } catch (SQLException e) {
         	flag = false;
             throw new ZboxException("init memdb error", e);
         } finally {
-            close(stmt1);
-            close(stmt2);
-            close(stmt3);
-            close(stmt4);
+            close(stmt);
             close(conn);
         }
         return flag;

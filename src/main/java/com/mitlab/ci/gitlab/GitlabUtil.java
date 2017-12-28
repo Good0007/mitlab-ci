@@ -12,6 +12,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import com.mitlab.ci.AbstractMitlabUtil;
 import com.mitlab.ci.gitlab.issue.IssueRequest;
 import com.mitlab.ci.gitlab.issue.IssueResponse;
+import com.mitlab.ci.gitlab.milestone.MilestoneRequest;
+import com.mitlab.ci.gitlab.milestone.MilestoneResponse;
 import com.mitlab.ci.gitlab.user.GitlabUser;
 import com.mitlab.ci.manager.dao.SettingDao;
 import com.mitlab.ci.zbox.ZboxException;
@@ -88,6 +90,36 @@ public final class GitlabUtil extends AbstractMitlabUtil {
             return users[0];
         }
         return null;
+    }
+    
+    public MilestoneResponse createMilestone(String project, MilestoneRequest milestone, String accessToken){
+    	ObjectMapper om = GitlabUtil.newObjectMapper();
+        Map<String, Object> bodyParams = new HashMap<String, Object>();
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        try {
+            om.writeValue(buffer, milestone);
+            buffer.flush();
+            bodyParams = om.readValue(buffer.toByteArray(), HashMap.class);
+            buffer.close();
+        } catch (IOException e) {
+            throw new ZboxException("create or update milestone error", e);
+        }
+
+        String encodedProject = project;
+        try {
+            encodedProject = URLEncoder.encode(project, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new ZboxException("create or update issue error", e);
+        }
+        Map<String, Object> headers = new HashMap<String, Object>();
+        headers.put("PRIVATE-TOKEN", accessToken);
+        headers.put("Content-Type", "application/json");
+        StringBuilder relativePath = new StringBuilder("/api/v4/projects/").append(encodedProject).append("/milestones");
+        if (milestone.getMilestoneId() != null) {
+            relativePath.append("/").append(milestone.getMilestoneId());
+            headers.put("Method", "PUT");
+        }
+        return this.proxyPost(bodyParams, null, headers, MilestoneResponse.class, relativePath.toString());
     }
 
 }

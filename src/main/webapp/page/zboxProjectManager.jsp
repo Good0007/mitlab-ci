@@ -99,14 +99,17 @@
 						<table class="table table-bordered table-striped">
 							<thead>
 								<tr>
-									<!-- <th>
+									<th>
 										ID
-									</th> -->
+									</th>
 									<th>
 										禅道项目
 									</th>
 									<th>
 										GITLAB项目[组/项目]
+									</th>
+									<th>
+										是否同步计划到里程碑
 									</th>
 									<th>
 										操作
@@ -116,9 +119,9 @@
 							<tbody>
 								<c:forEach items="${projectList}" var="obj">
 									<tr>
-										<%-- <td>
-											${obj.pid }
-										</td> --%>
+										<td>
+											${obj.zboxProjectId }
+										</td>
 										<td class="ztProject">
 											${obj.zboxProject }
 										</td>
@@ -126,9 +129,17 @@
 											${obj.gitlabProject }
 										</td>
 										<td>
+											<c:if test="${obj.planSync=='是'}">
+												<a href="javascript:;" val="<%=path%>/zboxProjectManager?m=updatePlanSync&pid=${obj.pid }&planSync=0" title="点击切换状态" onclick="updateState(this)">${obj.planSync }</a> 
+											</c:if>
+											<c:if test="${obj.planSync=='否'}">
+												<a href="javascript:;" val="<%=path%>/zboxProjectManager?m=updatePlanSync&pid=${obj.pid }&planSync=1" title="点击切换状态" onclick="updateState(this)">${obj.planSync }</a> 
+											</c:if>
+										</td>
+										<td>
 											<a href="zboxActionManager?project=${obj.zboxProject }"  >配置Action</a>
 											|
-											<a href="#" val="<%=path%>/zboxProjectManager?m=removeProject&pid=${obj.pid}" 
+											<a href="#" val="<%=path%>/zboxProjectManager?m=removeProject&zboxProjectId=${obj.zboxProjectId}" 
 											onclick="removeProject(this)">移除</a>
 										</td>
 									</tr>
@@ -138,24 +149,19 @@
 					
 					<a class="toggle-link" href="#actionForm"><i class="icon-plus"></i> 新增</a>
 					<form id="actionForm" class="form-horizontal hidden">
-					<div id="zboxProjectAlert" class="alert alert-danger fade in">
-					 	<button class="close" >
-					 		<span>&times;</span>
-					 	</button>
-					 	<p>获取禅道项目失败，请检查基础配置是否正确！</p>
-					 </div>	
+						<input type="hidden"  name="zboxProject"  id="zboxProjectName"/>
+						<div id="zboxProjectAlert" class="alert alert-danger fade in">
+						 	<button class="close" >
+						 		<span>&times;</span>
+						 	</button>
+						 	<p>获取禅道项目失败，请检查基础配置是否正确！</p>
+						 </div>	
 						<fieldset>
 							<legend>New Project Mapping</legend>
-							<!-- <div class="control-group">
-								<label class="control-label" for="input01">禅道项目</label>
-								<div class="controls">
-									<input type="text" class="input-xlarge" name="zboxProject" id="input01" />
-								</div>
-							</div> -->
 							<div class="control-group">
 								<label class="control-label" for="zboxProject">禅道项目</label>
 								<div class="controls">
-									<select id="zboxProject" name="zboxProject">
+									<select id="zboxProject" name="zboxProjectId">
 									</select>
 								</div>
 							</div>
@@ -163,6 +169,15 @@
 								<label class="control-label" for="input02"><span class="red">*</span> gitlab项目[组/项目]</label>
 								<div class="controls">
 									<input type="text" class="input-xlarge" name="gitlabProject"  id="input02" placeholder="请输入 gitlab项目[组/项目]"/>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label" for="select03">是否同步计划到里程碑</label>
+								<div class="controls">
+									<select id="select03" name="planSync"> 
+										<option value="0">否</option> 
+										<option value="1">是</option> 
+									</select>
 								</div>
 							</div>
 							<div class="form-actions">
@@ -198,6 +213,8 @@
 				return;
 			}
 		})
+		projectName = $("#zboxProject").find(":selected").html().trim();
+		$("#zboxProjectName").val(projectName);
 		if(flag) return false;
 		var _url = "<%=path%>/zboxProjectManager?m=addProject";
 		var btn=$(thisObj);
@@ -229,7 +246,7 @@
 		if(flag){
 			$.ajax({
 				url:$(thisObj).attr("val"),
-				type:"post",
+				type:"get",
 				success:function(resp){
 					if(resp=='0000'){
 						$("#alertMsg").html("移除成功!").show(500);
@@ -255,7 +272,7 @@
 				resp = resp.replace(/\\"/g,"\"");
 				resp = resp.replace(/"{/g,"{");
 				resp = resp.replace(/}"/g,"}");
-				//console.log(resp);
+				console.log(resp);
 				obj  = $.parseJSON(resp);
 				var options = "";
 				for (var Key in obj.data.projects){
@@ -264,7 +281,7 @@
 						//中文转码
 						project = reconvert(project);
 					}
-					options += "<option value='"+project+"'>"+project+"</option>\n";
+					options += "<option value='"+Key+"'>"+project+"</option>\n";
 			    }
 				if(options == ""){
 					options = "<option value=''>暂无项目，请登录禅道创建项目</option>\n";
@@ -277,6 +294,24 @@
 	    });
 	}
 	
+	function updateState(thisObj){
+		var flag = confirm("确定要更改当前状态么？");
+		if(flag){
+			$.ajax({
+				url:$(thisObj).attr("val"),
+				type:"post",
+				success:function(resp){
+					if(resp=='0000'){
+						location.reload();
+					}
+				},
+				error:function(){
+			  		alert("error");
+			  	}
+			});
+		}
+		
+	}
 	
 	function setTimeCloseMsg(time){
 		setTimeout(function(){

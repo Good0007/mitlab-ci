@@ -1,13 +1,17 @@
 package com.mitlab.ci.zbox;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.mitlab.ci.AbstractMitlabUtil;
 import com.mitlab.ci.manager.dao.SettingDao;
 import com.mitlab.ci.zbox.bug.ZboxBug;
 import com.mitlab.ci.zbox.bug.ZboxBugResult;
+import com.mitlab.ci.zbox.product.ZboxProductResult;
+import com.mitlab.ci.zbox.product.plan.ZboxProductplanResult;
+import com.mitlab.ci.zbox.project.ZboxProjectResult;
 import com.mitlab.ci.zbox.task.ZboxTask;
 import com.mitlab.ci.zbox.task.ZboxTaskResult;
-
-import java.util.*;
 
 public final class ZboxUtil extends AbstractMitlabUtil {
     //private static final ZboxUtil ZBOX_UTIL = new ZboxUtil("http://192.168.60.50:26080/zentao");
@@ -31,10 +35,14 @@ public final class ZboxUtil extends AbstractMitlabUtil {
 
     public static void main(String[] args) {
         ZboxSession session = ZboxUtil.getInstance().getZboxSession();
+        ZboxUtil.getInstance().login("admin", "Cwk199432", session).getIp();
+        ZboxProjectResult zs = ZboxUtil.getInstance().getProjectByPid("1" , session);
+        //ZboxProductplanResult zs = ZboxUtil.getInstance().getProductPlan("9", session);
+        System.out.println(zs.toString());
         //System.out.println(ZboxUtil.getInstance().login("admin", "Cwk199432", session).getIp());
-        //System.out.println(ZboxUtil.getInstance().getTask("4", session));
-        //System.out.println(ZboxUtil.getInstance().getProjects(session).toString());
-        //ZboxUtil.getInstance().logout(session);
+        //ZboxTask tas = ZboxUtil.getInstance().getTask("4", session);
+       // System.out.println(.toString());
+        ZboxUtil.getInstance().logout(session);
     }
 
     public ZboxUser login(String username, String password, ZboxSession session) {
@@ -76,4 +84,47 @@ public final class ZboxUtil extends AbstractMitlabUtil {
          urlParams.put(session.getSessionName(), session.getSessionID());
          return this.getJsonString(bodyParams, urlParams,null, jsonPath);
     }
+    
+    /**
+     * 获取产品-包该产品含全部计划
+     * @param productId
+     * @param session
+     * @return
+     */
+    public ZboxProductResult getAllProductPlan(String productId , ZboxSession session){
+    	 Map<String, Object> bodyParams = new HashMap<String, Object>();
+         bodyParams.put(session.getSessionName(), session.getSessionID());
+         Map<String, Object> urlParams = new HashMap<String, Object>();
+         ZboxProductResult zpr = this.proxyPost(bodyParams, urlParams, ZboxProductResult.class, "/productplan-browse-"+productId+".json");
+         return zpr;
+    }
+    
+    /**
+     * 获取产品计划
+     * @param plandId
+     * @param session
+     * @return
+     */
+    public ZboxProductplanResult getProductPlan(String plandId , ZboxSession session){
+   	 	Map<String, Object> bodyParams = new HashMap<String, Object>();
+        bodyParams.put(session.getSessionName(), session.getSessionID());
+        Map<String, Object> urlParams = new HashMap<String, Object>();
+        ZboxProductplanResult zpr = this.proxyPost(bodyParams, urlParams, ZboxProductplanResult.class, "/productplan-view-"+plandId+".json");
+        return zpr;
+   }
+    
+    /**
+     * 获取项目信息-包含关联的产品
+     * @param projectId
+     * @param session
+     * @return
+     */
+    public ZboxProjectResult getProjectByPid(String projectId , ZboxSession session){
+    	Map<String, Object> bodyParams = new HashMap<String, Object>();
+        bodyParams.put(session.getSessionName(), session.getSessionID());
+        Map<String, Object> urlParams = new HashMap<String, Object>();
+        ZboxProjectResult zpr = this.proxyPost(bodyParams, urlParams, ZboxProjectResult.class, "/project-view-"+projectId+".json");
+        return zpr;
+    }
+    
 }

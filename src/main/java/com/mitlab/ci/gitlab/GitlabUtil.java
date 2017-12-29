@@ -12,6 +12,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import com.mitlab.ci.AbstractMitlabUtil;
 import com.mitlab.ci.gitlab.issue.IssueRequest;
 import com.mitlab.ci.gitlab.issue.IssueResponse;
+import com.mitlab.ci.gitlab.issue.LabelsResponse;
 import com.mitlab.ci.gitlab.milestone.MilestoneRequest;
 import com.mitlab.ci.gitlab.milestone.MilestoneResponse;
 import com.mitlab.ci.gitlab.user.GitlabUser;
@@ -30,6 +31,11 @@ public final class GitlabUtil extends AbstractMitlabUtil {
     	String gitlabUrl = setting.getSettingInfo().getGitlabUrl();
     	setting.closeConn();
         return new GitlabUtil(gitlabUrl);
+    }
+    
+    public static void main(String[] args) {
+    	LabelsResponse[] res = GitlabUtil.getInstance().getProjectLabels("VOP/learnLinux","A8CNNYM9QnD8_8v7TQBy");
+    	System.out.println("");
     }
 
     public IssueResponse createIssue(String project, IssueRequest issue, String accessToken) {
@@ -120,6 +126,27 @@ public final class GitlabUtil extends AbstractMitlabUtil {
             headers.put("Method", "PUT");
         }
         return this.proxyPost(bodyParams, null, headers, MilestoneResponse.class, relativePath.toString());
+    }
+    
+    /**
+     * 获取项目labels
+     * @param project
+     * @param accessToken
+     * @return
+     */
+    public LabelsResponse[] getProjectLabels(String project , String accessToken){
+        String encodedProject = project;
+        try {
+            encodedProject = URLEncoder.encode(project, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new ZboxException("create or update issue error", e);
+        }
+        Map<String, Object> headers = new HashMap<String, Object>();
+        headers.put("PRIVATE-TOKEN", accessToken);
+        headers.put("Content-Type", "application/json");
+        headers.put("Method", "GET");
+        StringBuilder relativePath = new StringBuilder("/api/v4/projects/").append(encodedProject).append("/labels");
+        return this.proxyPost(null,null, headers, LabelsResponse[].class, relativePath.toString());
     }
 
 }

@@ -60,7 +60,7 @@ public class zboxActionManagerServlet extends HttpServlet {
 			ActionMappingEntity mapping = new ActionMappingEntity();
 			mapping.setGitlabAction(gitlabAction);
 			mapping.setZboxAction(zboxAction);
-			mapping.setProject(project);
+			mapping.setProject(new String(project.getBytes("ISO8859-1"),"UTF-8"));
 			mapping.setGitlabLabel(gitlabLabel);
 			if(actionMappingDao.addActionMapping(mapping)){
 				logger.info("add mapping:"+mapping.toString());
@@ -81,6 +81,8 @@ public class zboxActionManagerServlet extends HttpServlet {
 			String project = request.getParameter("project");
 			if(project == null || "".equals(project)){
 				project = null;
+			}else{
+				project = new String(project.getBytes("ISO8859-1"),"UTF-8");
 			}
 			request.setAttribute("project", project);
 			request.setAttribute("actionMappingList", actionMappingDao.getMappingListByProject(project));

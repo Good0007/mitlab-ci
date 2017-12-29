@@ -22,7 +22,7 @@ public class IssueResponse {
     private String updatedAt;
     @JsonProperty("closed_at")
     private String closedAt;
-    private String milestone;
+    private Milestone milestone;
     private Boolean subscribed;
     @JsonProperty("user_notes_count")
     private Integer userNotesCount;
@@ -134,14 +134,6 @@ public class IssueResponse {
         this.closedAt = closedAt;
     }
 
-    public String getMilestone() {
-        return milestone;
-    }
-
-    public void setMilestone(String milestone) {
-        this.milestone = milestone;
-    }
-
     public Boolean getSubscribed() {
         return subscribed;
     }
@@ -221,7 +213,7 @@ public class IssueResponse {
                 ", description='" + description + '\'' +
                 ", updatedAt='" + updatedAt + '\'' +
                 ", closedAt='" + closedAt + '\'' +
-                ", milestone='" + milestone + '\'' +
+                ", milestone='" + milestone.toString() + '\'' +
                 ", subscribed=" + subscribed +
                 ", userNotesCount=" + userNotesCount +
                 ", dueDate='" + dueDate + '\'' +

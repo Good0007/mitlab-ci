@@ -139,7 +139,7 @@
 										<td>
 											<a href="zboxActionManager?project=${obj.zboxProject }"  >配置Action</a>
 											|
-											<a href="#" val="<%=path%>/zboxProjectManager?m=removeProject&zboxProjectId=${obj.zboxProjectId}" 
+											<a href="#" val="<%=path%>/zboxProjectManager?m=removeProject&projectId=${obj.zboxProjectId}" 
 											onclick="removeProject(this)">移除</a>
 										</td>
 									</tr>

@@ -180,8 +180,9 @@ public class ZboxServlet extends HttpServlet {
      */
     private void onProductplanReceive(ZboxNotify notify){
     	/**
-    	 * @TODO
-    	 *  1.查询当创建的计划信息
+    	 * @TODO 编辑计划时，必须更改标题，否则gitlab更新里程碑失败？
+    	 * 
+    	 *  1.查询创建的计划信息
     	 *  2.根据关联的项目查询t_project是否需要同步计划到指定项目的里程碑
     	 *  3.封装参数 ，调用Gitlab Aip 创建里程碑
     	 */
@@ -198,7 +199,7 @@ public class ZboxServlet extends HttpServlet {
     					  if(productId.equals(entry.getKey())){
     						  //封装参数，创建当前项目对应的里程碑
     						  MilestoneRequest milestone = new MilestoneRequest();
-    						  String title = plan.getPlan().getTitle();
+    						  String title = plan.getPlan().getTitle().replace("PLAN ", "").trim();
     						  title = title.substring(title.indexOf(" "), title.lastIndexOf("/"));
     						  milestone.setId(notify.getObjectId());
     						  milestone.setTitle(title);
@@ -229,8 +230,6 @@ public class ZboxServlet extends HttpServlet {
     			}
     		}
     	}
-    	//projectDao.getProjectByProjectId(plan.getPlan());
-    	//createMilestone
     }
 
     private void onTaskReceive(ZboxNotify notify) {
@@ -308,6 +307,13 @@ public class ZboxServlet extends HttpServlet {
 	    		//更新指派信息
 	    		issueDao.updateAssignTo(cacheId, gitlabProject, assignToUser);
 	    	}
+	       //更新bug到gitlab里程碑
+			if(bug.getBug().getPlan()!=null && !"".equals(bug.getBug().getPlan())){
+    			ProductPlanEntity planInfo = planDao.findOnePlanMapping(bug.getBug().getPlan(), bug.getProductID(), gitlabProject);
+    			if(planInfo!=null){
+    				issueRequest.setMilestoneId(Long.valueOf(planInfo.getMilestoneId()));
+    			}
+    		}
 	        foundIssueMapping = true;
         	issueRequest.setId(issue.getGid());
             issueRequest.setIssueIid(issue.getGiid());

@@ -165,9 +165,9 @@
 							<div class="control-group">
 								<label class="control-label" for="select02">禅道项目</label>
 								<div class="controls">
-									<select id="select02" name="project"> 
+									<select id="select02" name="project" onchange="getGitlabLabels(this)"> 
 										<c:forEach items="${projectList}" var="obj">
-											<option value="${obj.zboxProject }">${obj.zboxProject }</option> 
+											<option value="${obj.zboxProject }" pid="${obj.zboxProjectId }">${obj.zboxProject }</option> 
 										</c:forEach> 
 									</select>
 								</div>
@@ -212,10 +212,19 @@
 									<input type="text" class="input-xlarge" name="gitlabAction"  id="input02" placeholder="请输入Gitlab操作 如：close,open..."/>
 								</div>
 							</div> -->
-							<div class="control-group">
+							
+							<div class="control-group inputLabel" >
 								<label class="control-label" for="input03">Gitlab Label</label>
 								<div class="controls">
-									<input type="text" class="input-xlarge" name="gitlabLabel"  id="input03" placeholder="请输入Gitlab Label 如：doing,done..."/>
+									<input type="text" class="input-xlarge" name="gitlabLabel"  id="input03" placeholder="请输入Gitlab Label 如：Doing,Done..."/>
+									 <button type="button" class="btn btn-info" onclick="fromGitlab()">从Gitlab项目中选择</button>
+								</div>
+							</div>
+							<div class="control-group selectLabel">
+								<label class="control-label" for="labelSelect">选择 Gitlab Label</label>
+								<div class="controls">
+									<select id="labelSelect" name="gitlabLabel"></select>
+									<button type="button" class="btn btn-info" onclick="fromInput()">自定义Label</button>
 								</div>
 							</div>
 							<div class="form-actions">
@@ -234,7 +243,10 @@
 	
 	$(function(){
 		$("#alertMsg").hide();
+		$(".inputLabel").hide();
+		$("#input03").attr("disabled",true);
 		$("select[name=project]").val("${project}");
+		getGitlabLabels($("#select02"));
 	});
 	function addActionMapping(thisObj){
 		var _url = "<%=path%>/zboxActionManager?m=addMapping";
@@ -282,7 +294,6 @@
 	
 	function reLoginSession(){
 		var _url = "<%=path%>/zbox.do?m=updateSession";
-		location.replace(location.href);
 		$.ajax({
 			url:_url,
 			type:"post",
@@ -312,6 +323,48 @@
 	
 	function chooseProjectAction(thisObj){
 		location.replace("zboxActionManager?project="+thisObj.value);
+	}
+	
+	
+	//输入label
+	function fromInput(){
+		$(".selectLabel").hide();
+		$("#labelSelect").attr("disabled",true);
+		$(".inputLabel").show();
+		$("#input03").removeAttr("disabled");
+	}
+	
+	//从gitlabel 获取
+	function fromGitlab(){
+		$(".inputLabel").hide();
+		$("#input03").attr("disabled",true)
+		getGitlabLabels($("#select02"));
+		$(".selectLabel").show();
+		$("#labelSelect").removeAttr("disabled");
+	}
+	
+	function getGitlabLabels(thisObj){
+		var _url = "<%=path%>/gitlabLabelsManager?m=getLabels";
+		$.ajax({
+			url:_url,
+			type:"post",
+			data : {
+				projectId:$(thisObj).find(":selected").attr("pid")
+			},
+			success:function(resp){
+				labels = $.parseJSON(resp);
+				options = "<option value=''>没有获取到数据，请选择自定义</option>";
+				if(labels!=null && labels.length>0){
+					options = "<option value=''>不定义</option>";
+					for(var i = 0; i<labels.length; i++){
+						options += "<option value='"+labels[i].name+"' style='color:"+labels[i].color+"' color='"+labels[i].color+"'>"+labels[i].name+"</option>\n"
+					}
+				}
+				$("#labelSelect").html(options);
+		  	},
+		  	error:function(){
+		  	}
+	    });
 	}
 	
 	</script>

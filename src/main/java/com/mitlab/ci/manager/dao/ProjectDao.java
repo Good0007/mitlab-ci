@@ -272,4 +272,40 @@ public class ProjectDao extends BaseDao{
         return obj;
 	}
 	
+	
+	public ProjectEntity getProjectByProjectName(String ProjectName){
+		String sql = "select "
+						+ "pid,"
+						+ "zbox_project,"
+						+ "zbox_project_id,"
+						+ "gitlab_project,"
+						+ "plan_sync "
+				+ "from "
+						+ "t_project "
+				+ "where zbox_project=?";
+		Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet res = null;
+        ProjectEntity obj = new ProjectEntity();
+        try {
+			conn = h2Pool.getConnection();
+			stmt = conn.prepareStatement(sql);
+			stmt.setString(1, ProjectName);
+			res = stmt.executeQuery();
+			if(res.next()){
+				obj.setPid(res.getString("pid"));
+				obj.setZboxProjectId(res.getString("zbox_project_id"));
+				obj.setZboxProject(res.getString("zbox_project"));
+				obj.setGitlabProject(res.getString("gitlab_project"));
+				obj.setPlanSync(res.getString("plan_sync"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+           close(stmt);
+           close(conn);
+       }
+        return obj;
+	}
+	
 }

@@ -40,7 +40,7 @@ public class ZboxProductResult extends ZboxResult{
 
 	protected void transData2Product(String data) {
         try {
-            this.setProduct(ZboxUtil.getInstance().newObjectMapper().readValue(data, ZboxProduct.class));
+            this.setProduct(ZboxUtil.getInstance("").newObjectMapper().readValue(data, ZboxProduct.class));
         } catch (IOException e) {
             throw new ZboxException(e.getMessage(), e);
         }

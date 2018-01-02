@@ -15,6 +15,7 @@ import com.mitlab.ci.gitlab.issue.IssueResponse;
 import com.mitlab.ci.gitlab.issue.LabelsResponse;
 import com.mitlab.ci.gitlab.milestone.MilestoneRequest;
 import com.mitlab.ci.gitlab.milestone.MilestoneResponse;
+import com.mitlab.ci.gitlab.project.ProjectResoponse;
 import com.mitlab.ci.gitlab.user.GitlabUser;
 import com.mitlab.ci.manager.dao.SettingDao;
 import com.mitlab.ci.zbox.ZboxException;
@@ -26,16 +27,18 @@ public final class GitlabUtil extends AbstractMitlabUtil {
         super(accessUrl);
     }
 
-    public static final GitlabUtil getInstance() {
-    	SettingDao setting = new SettingDao();
-    	String gitlabUrl = setting.getSettingInfo().getGitlabUrl();
-    	setting.closeConn();
+    public static final GitlabUtil getInstance(String gitlabUrl) {
+    	if("".equals(gitlabUrl)){
+    		SettingDao setting = new SettingDao();
+        	gitlabUrl = setting.getSettingInfo().getGitlabUrl();
+        	setting.closeConn();
+    	}
         return new GitlabUtil(gitlabUrl);
     }
     
     public static void main(String[] args) {
-    	LabelsResponse[] res = GitlabUtil.getInstance().getProjectLabels("VOP/learnLinux","A8CNNYM9QnD8_8v7TQBy");
-    	System.out.println("");
+    	//LabelsResponse[] res = GitlabUtil.getInstance().getProjectLabels("VOP/learnLinux","A8CNNYM9QnD8_8v7TQBy");
+    	//ProjectResoponse[] res = GitlabUtil.getInstance().getAllProjects("A8CNNYM9QnD8_8v7TQBy");
     }
 
     public IssueResponse createIssue(String project, IssueRequest issue, String accessToken) {
@@ -147,6 +150,20 @@ public final class GitlabUtil extends AbstractMitlabUtil {
         headers.put("Method", "GET");
         StringBuilder relativePath = new StringBuilder("/api/v4/projects/").append(encodedProject).append("/labels");
         return this.proxyPost(null,null, headers, LabelsResponse[].class, relativePath.toString());
+    }
+    
+    /**
+     * 获取gitlab所有项目
+     * @param accessToken
+     * @return
+     */
+    public ProjectResoponse[] getAllProjects( String accessToken){
+    	Map<String, Object> headers = new HashMap<String, Object>();
+        headers.put("PRIVATE-TOKEN", accessToken);
+        headers.put("Content-Type", "application/json");
+        headers.put("Method", "GET");
+        StringBuilder relativePath = new StringBuilder("/api/v4/projects");
+        return this.proxyPost(null,null, headers, ProjectResoponse[].class, relativePath.toString());
     }
 
 }

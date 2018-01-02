@@ -19,10 +19,12 @@ public final class ZboxUtil extends AbstractMitlabUtil {
         super(accessUrl);
     }
 
-    public static final ZboxUtil getInstance() {
-    	SettingDao setting = new SettingDao();
-    	String zboxUrl = setting.getSettingInfo().getZboxUrl();
-    	setting.closeConn();
+    public static final ZboxUtil getInstance(String zboxUrl) {
+    	if("".equals(zboxUrl)){
+    		SettingDao setting = new SettingDao();
+        	zboxUrl = setting.getSettingInfo().getZboxUrl();
+        	setting.closeConn();
+    	}
     	return new ZboxUtil(zboxUrl);
     }
 
@@ -34,15 +36,15 @@ public final class ZboxUtil extends AbstractMitlabUtil {
     }
 
     public static void main(String[] args) {
-        ZboxSession session = ZboxUtil.getInstance().getZboxSession();
-        ZboxUtil.getInstance().login("admin", "Cwk199432", session).getIp();
-        ZboxProjectResult zs = ZboxUtil.getInstance().getProjectByPid("1" , session);
+        //ZboxSession session = ZboxUtil.getInstance().getZboxSession();
+        //ZboxUtil.getInstance().login("admin", "Cwk199432", session).getIp();
+        //ZboxProjectResult zs = ZboxUtil.getInstance().getProjectByPid("1" , session);
         //ZboxProductplanResult zs = ZboxUtil.getInstance().getProductPlan("9", session);
-        System.out.println(zs.toString());
+        //System.out.println(zs.toString());
         //System.out.println(ZboxUtil.getInstance().login("admin", "Cwk199432", session).getIp());
         //ZboxTask tas = ZboxUtil.getInstance().getTask("4", session);
        // System.out.println(.toString());
-        ZboxUtil.getInstance().logout(session);
+       // ZboxUtil.getInstance().logout(session);
     }
 
     public ZboxUser login(String username, String password, ZboxSession session) {

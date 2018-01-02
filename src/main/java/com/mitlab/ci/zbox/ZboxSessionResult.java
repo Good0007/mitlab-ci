@@ -35,7 +35,7 @@ public class ZboxSessionResult extends ZboxResult {
 
     protected void transData2Session(String data) {
         try {
-            this.setSession(ZboxUtil.getInstance().newObjectMapper().readValue(data, ZboxSession.class));
+            this.setSession(ZboxUtil.getInstance("").newObjectMapper().readValue(data, ZboxSession.class));
         } catch (IOException e) {
             throw new ZboxException(e.getMessage(), e);
         }

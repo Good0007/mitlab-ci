@@ -58,8 +58,8 @@ public class ZboxProjectResult extends ZboxResult{
 	protected void transData2Project(String data) {
 		 Map<String, ZboxProductDetails> map = new HashMap<String, ZboxProductDetails>();
         try {
-            this.setProject(ZboxUtil.getInstance().newObjectMapper().readValue(data, ZboxProject.class));
-            JsonNode jsonNode =  ZboxUtil.getInstance().newObjectMapper().readTree(data);
+            this.setProject(ZboxUtil.getInstance("").newObjectMapper().readValue(data, ZboxProject.class));
+            JsonNode jsonNode =  ZboxUtil.getInstance("").newObjectMapper().readTree(data);
             Iterator<Entry<String, JsonNode>> elements = jsonNode.getFields();
             while (elements.hasNext()) {
               Entry<String, JsonNode> node = elements.next();

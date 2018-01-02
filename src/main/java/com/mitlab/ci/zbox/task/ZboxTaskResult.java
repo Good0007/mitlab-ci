@@ -38,7 +38,7 @@ public class ZboxTaskResult extends ZboxResult {
 
     protected void transData2Task(String data) {
         try {
-            this.setTask(ZboxUtil.getInstance().newObjectMapper().readValue(data, ZboxTask.class));
+            this.setTask(ZboxUtil.getInstance("").newObjectMapper().readValue(data, ZboxTask.class));
         } catch (IOException e) {
             throw new ZboxException(e.getMessage(), e);
         }

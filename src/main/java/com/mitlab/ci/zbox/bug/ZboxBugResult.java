@@ -38,7 +38,7 @@ public class ZboxBugResult extends ZboxResult {
 
     protected void transData2Bug(String data) {
         try {
-            this.setBug(ZboxUtil.getInstance().newObjectMapper().readValue(data, ZboxBug.class));
+            this.setBug(ZboxUtil.getInstance("").newObjectMapper().readValue(data, ZboxBug.class));
         } catch (IOException e) {
             throw new ZboxException(e.getMessage(), e);
         }

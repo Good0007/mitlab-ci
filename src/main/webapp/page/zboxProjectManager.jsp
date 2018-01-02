@@ -165,10 +165,17 @@
 									</select>
 								</div>
 							</div>
-							<div class="control-group">
+							<!-- <div class="control-group">
 								<label class="control-label" for="input02"><span class="red">*</span> gitlab项目[组/项目]</label>
 								<div class="controls">
 									<input type="text" class="input-xlarge" name="gitlabProject"  id="input02" placeholder="请输入 gitlab项目[组/项目]"/>
+								</div>
+							</div> -->
+							<div class="control-group">
+								<label class="control-label" for="gitlabProject">gitlab项目[组/项目]</label>
+								<div class="controls">
+									<select id="gitlabProject" name="gitlabProject">
+									</select>
 								</div>
 							</div>
 							<div class="control-group">
@@ -198,12 +205,15 @@
 		$("#alertMsg").hide();
 		$("#zboxProjectAlert").hide();
 		getProjects();
+		getAllGitlabProject();
 	});
+	
+	//新增记录
 	function addProject(thisObj){
 		var form = $("#actionForm")[0];
 		var flag = false;
 		if((form.gitlabProject.value).trim() == ""){
-			$("#alertMsg").html("请填写gitlab项目！").removeClass("alert-info").addClass("alert-danger").show(500);
+			$("#alertMsg").html("请选择gitlab项目！").removeClass("alert-info").addClass("alert-danger").show(500);
 			return false;
 		}
 		$(".ztProject").each(function(index , domEle){
@@ -227,7 +237,7 @@
 			},
 			success:function(resp){
 				if(resp=='0000'){
-					$("#alertMsg").show(500);
+					reLoginSession("新增项目：成功!");
 					setTimeCloseMsg(1000);
 				}else{
 					$("#alertMsg").html("添加失败!").show(500);
@@ -241,6 +251,7 @@
 	    });
 	}
 	
+	//移除项目
 	function removeProject(thisObj){
 		var flag = confirm("确定要删除该项目么，这将同时删除该项目所有action配置！");
 		if(flag){
@@ -249,7 +260,7 @@
 				type:"get",
 				success:function(resp){
 					if(resp=='0000'){
-						$("#alertMsg").html("移除成功!").show(500);
+						reLoginSession("移除项目：成功!");
 						setTimeCloseMsg(1000);
 					}else{
 						$("#alertMsg").html("移除失败!").show(500);
@@ -262,7 +273,7 @@
 		}
 	}
 	
-	
+	//获取zbox项目
 	function getProjects(){
 		var _url = "<%=path%>/zbox.do?m=getProjects";
 		$.ajax({
@@ -294,6 +305,29 @@
 	    });
 	}
 	
+	function getAllGitlabProject(){
+		var _url = "<%=path%>/zbox.do?m=getGitlabProjects";
+		$.ajax({
+			url:_url,
+			type:"post",
+			success:function(resp){
+				resp  = $.parseJSON(resp);
+				var options = "";
+				for (var i=0 ;i<resp.length; i++){
+					options += "<option value='"+resp[i].pathWithNamespace+"'>"+resp[i].pathWithNamespace+"</option>\n";
+			    }
+				if(options == ""){
+					options = "<option value=''>暂无项目，请登录Gitlab创建项目</option>\n";
+				}
+				$("#gitlabProject").html(options);
+		  	},
+		  	error:function(){
+		  		options = "<option value=''>获取项目列表出错！</option>\n";
+		  		$("#gitlabProject").html(options);
+		  	}
+	    });
+	}
+	
 	function updateState(thisObj){
 		var flag = confirm("确定要更改当前状态么？");
 		if(flag){
@@ -302,6 +336,7 @@
 				type:"post",
 				success:function(resp){
 					if(resp=='0000'){
+						reLoginSession("更新项目：成功!");
 						location.reload();
 					}
 				},
@@ -355,6 +390,26 @@
         }); 
         return str; 
     }
+    
+    //重新登录
+    function reLoginSession(msg){
+		var _url = "<%=path%>/zbox.do?m=updateSession";
+		$.ajax({
+			url:_url,
+			type:"post",
+			success:function(resp){
+				if(resp=='0000'){
+					$("#alertMsg").removeClass("alert-danger").addClass("alert-success").html(msg+"<br/> 重新登录：成功！").show(500);
+					setTimeCloseMsg(1500);
+				}else{
+					$("#alertMsg").removeClass("alert-success").addClass("alert-danger").html("重新登录失败!").show(500);
+				}
+		  	},
+		  	error:function(){
+		  		
+		  	}
+	    });
+	}
 	
 	</script>
 	</body>

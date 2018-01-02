@@ -34,7 +34,7 @@ public class ZboxProductplanResult extends ZboxResult{
 	
 	protected void transData2Producplan(String data) {
         try {
-            this.setPlan(ZboxUtil.getInstance().newObjectMapper().readValue(data, ZboxProductplan.class));
+            this.setPlan(ZboxUtil.getInstance("").newObjectMapper().readValue(data, ZboxProductplan.class));
         } catch (IOException e) {
             throw new ZboxException(e.getMessage(), e);
         }

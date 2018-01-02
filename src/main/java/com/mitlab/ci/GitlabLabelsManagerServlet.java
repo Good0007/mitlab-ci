@@ -32,7 +32,7 @@ public class GitlabLabelsManagerServlet extends HttpServlet {
 		      ProjectEntity projectE = projectDao.getProjectByProjectId(projectId);
 		      if(projectE!=null){
 		    	    SettingEntity settingInfo =  settingDao.getSettingInfo();
-				    LabelsResponse[] res = GitlabUtil.getInstance().getProjectLabels(projectE.getGitlabProject(), settingInfo.getGitlabToken());
+				    LabelsResponse[] res = GitlabUtil.getInstance("").getProjectLabels(projectE.getGitlabProject(), settingInfo.getGitlabToken());
 					String json = new ObjectMapper().writeValueAsString(res);
 					response.getWriter().write(json);
 		      }

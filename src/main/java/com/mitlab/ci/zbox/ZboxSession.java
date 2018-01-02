@@ -1,5 +1,9 @@
 package com.mitlab.ci.zbox;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.mitlab.ci.manager.ProjectEntity;
 import com.mitlab.ci.manager.SettingEntity;
 
 public class ZboxSession {
@@ -9,6 +13,8 @@ public class ZboxSession {
     private String sessionName;
     private int rand;
     private SettingEntity settingInfo;
+    private List<ProjectEntity> projects;
+    
 
     public String getSessionName() {
         return sessionName;
@@ -69,11 +75,46 @@ public class ZboxSession {
 		this.settingInfo = settingInfo;
 	}
 
+	public List<ProjectEntity> getProjects() {
+		return projects;
+	}
+
+	public void setProjects(List<ProjectEntity> projects) {
+		this.projects = projects;
+	}
+	
+	
 	@Override
 	public String toString() {
 		return "ZboxSession [title=" + title + ", zentaosid=" + zentaosid + ", sessionID=" + sessionID
 				+ ", sessionName=" + sessionName + ", rand=" + rand + ", settingInfo=" + settingInfo + ", pager="
 				+ pager + "]";
+	}
+	
+	public List<ProjectEntity> getProjectsByPlanSync(String sync){
+		List<ProjectEntity> list = null;
+		if(projects!=null){
+			list = new ArrayList<ProjectEntity>();
+			for(ProjectEntity obj : projects){
+				if(sync.equals(obj.getPlanSync())){
+					list.add(obj);
+				}
+			}
+		}
+		return list;
+	}
+	
+	public  String  getGitlabProjectByZboxProject(String zboxProject){
+		String str = null;
+		if(projects!=null){
+			for(ProjectEntity obj : projects){
+				if(zboxProject.equals(obj.getZboxProject())){
+					str = obj.getGitlabProject();
+					break;
+				}
+			}
+		}
+		return str;
 	}
 	
 }

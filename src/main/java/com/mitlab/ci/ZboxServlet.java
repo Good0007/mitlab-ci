@@ -12,11 +12,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mitlab.ci.gitlab.GitlabUtil;
 import com.mitlab.ci.gitlab.issue.IssueRequest;
 import com.mitlab.ci.gitlab.issue.IssueResponse;
 import com.mitlab.ci.gitlab.milestone.MilestoneRequest;
 import com.mitlab.ci.gitlab.milestone.MilestoneResponse;
+import com.mitlab.ci.gitlab.project.ProjectResoponse;
 import com.mitlab.ci.gitlab.user.GitlabUser;
 import com.mitlab.ci.manager.ActionMappingEntity;
 import com.mitlab.ci.manager.IssueMappingEntity;
@@ -64,7 +66,7 @@ public class ZboxServlet extends HttpServlet {
 
     @Override
     public void destroy() {
-        ZboxUtil.getInstance().logout(session);
+        ZboxUtil.getInstance(this.session.getSettingInfo().getZboxUrl()).logout(session);
         session = null;
         initDao.closeConn();
         initDao = null;
@@ -99,8 +101,15 @@ public class ZboxServlet extends HttpServlet {
         	return;
         }else if("getProjects".equals(method)){
         	//获取禅道项目列表
-        	String projectJson = ZboxUtil.getInstance().getProjectsJson( this.session, "/project.json");
+        	String projectJson = ZboxUtil.getInstance(this.session.getSettingInfo().getZboxUrl()).getProjectsJson( this.session, "/project.json");
         	response.getWriter().print(projectJson);
+        	return;
+        }else if("getGitlabProjects".equals(method)){
+        	//获取Gitlab项目列表
+        	ProjectResoponse[] res = GitlabUtil.getInstance(this.session.getSettingInfo().getGitlabUrl()).
+        			getAllProjects(this.session.getSettingInfo().getGitlabToken());
+        	String json = new ObjectMapper().writeValueAsString(res);
+			response.getWriter().write(json);
         	return;
         }
         InputStream ins = null;
@@ -116,8 +125,8 @@ public class ZboxServlet extends HttpServlet {
                 if (logger.isLoggable(Level.INFO)) {
                     logger.info("logout zbox for session[" + this.session + "]");
                 }
-                ZboxUtil.getInstance().logout(session);
-                this.session = ZboxUtil.getInstance().getZboxSession();
+                ZboxUtil.getInstance(this.session.getSettingInfo().getZboxUrl()).logout(session);
+                this.session = ZboxUtil.getInstance(this.session.getSettingInfo().getZboxUrl()).getZboxSession();
                 if (logger.isLoggable(Level.INFO)) {
                     logger.info("new zbox session[" + this.session + "]");
                 }
@@ -125,7 +134,7 @@ public class ZboxServlet extends HttpServlet {
                 	//重新登录
                 	this.loginSession();
                 }
-                ZboxUtil.getInstance().login(this.session.getSettingInfo().getZboxUser(), 
+                ZboxUtil.getInstance(this.session.getSettingInfo().getZboxUrl()).login(this.session.getSettingInfo().getZboxUser(), 
                 		this.session.getSettingInfo().getZboxPassword(), session);
                 if (logger.isLoggable(Level.INFO)) {
                     logger.info("logout zbox for session[" + this.session + "]");
@@ -183,14 +192,15 @@ public class ZboxServlet extends HttpServlet {
     	 * @TODO 编辑计划时，必须更改标题，否则gitlab更新里程碑失败？
     	 * 
     	 *  1.查询创建的计划信息
-    	 *  2.根据关联的项目查询t_project是否需要同步计划到指定项目的里程碑
+    	 *  2.根据关联的项目查询t_project，判断是否需要同步计划到指定项目的里程碑
     	 *  3.封装参数 ，调用Gitlab Aip 创建里程碑
     	 */
-    	ZboxProductplanResult plan = ZboxUtil.getInstance().getProductPlan(notify.getObjectId(), session);
-    	List<ProjectEntity> projectList =  projectDao.getProjectsByPlanSync("1");
+    	ZboxProductplanResult plan = ZboxUtil.getInstance(this.session.getSettingInfo().getZboxUrl()).getProductPlan(notify.getObjectId(), session);
+    	List<ProjectEntity> projectList =  this.session.getProjectsByPlanSync("是");
+    	//projectDao.getProjectsByPlanSync("1");
     	if(projectList!=null){
     		for(ProjectEntity project : projectList){
-    			ZboxProjectResult projectInfo = ZboxUtil.getInstance().getProjectByPid(project.getZboxProjectId(), session);
+    			ZboxProjectResult projectInfo = ZboxUtil.getInstance(this.session.getSettingInfo().getZboxUrl()).getProjectByPid(project.getZboxProjectId(), session);
     			//获取该项目 关联的产品 Key 为产品ID
     			if(projectInfo.getProducts()!=null && projectInfo.getProducts().size()>0){
     				for (Map.Entry<String, ZboxProductDetails> entry : projectInfo.getProducts().entrySet()) {  
@@ -215,7 +225,7 @@ public class ZboxServlet extends HttpServlet {
     							  logger.info("当前产品："+entry.getKey() +" -- 为关联的项目 ["+project.getGitlabProject()+"] 更新里程碑:"+milestone.toString());
     							  logger.info("更新计划："+planInfo.toString());
     						  }
-							  MilestoneResponse response =  GitlabUtil.getInstance().
+							  MilestoneResponse response =  GitlabUtil.getInstance(this.session.getSettingInfo().getGitlabUrl()).
 									 createMilestone(project.getGitlabProject(), milestone, this.session.getSettingInfo().getGitlabToken());
     						  if(response!=null){
     							  if(planInfo==null ){
@@ -233,14 +243,15 @@ public class ZboxServlet extends HttpServlet {
     }
 
     private void onTaskReceive(ZboxNotify notify) {
-        ZboxTask task = ZboxUtil.getInstance().getTask(notify.getObjectId(), session);
+        ZboxTask task = ZboxUtil.getInstance(this.session.getSettingInfo().getZboxUrl()).getTask(notify.getObjectId(), session);
         IssueRequest issueRequest = new IssueRequest();
         //当前指派信息
         String assignToUser = task.getTask().getAssignedTo();
         ZboxTaskDetails taskDetails = task.getTask();
         String cacheId = "Task-" + taskDetails.getId();
         String zboxProject = task.getProject().getName();
-        String gitlabProject = projectDao.findGitlabProjectByZboxProject(zboxProject);
+      //projectDao.findGitlabProjectByZboxProject(zboxProject);
+        String gitlabProject = this.session.getGitlabProjectByZboxProject(zboxProject);
         if(gitlabProject==null){
         	logger.info("onTaskReceive - ERROR：请检查GitlabProject名称是否配置正确！");
         	return ;
@@ -261,7 +272,7 @@ public class ZboxServlet extends HttpServlet {
                 logger.info("onTaskReceive - issueMapping : " +issue.toString());
             }
         }
-        GitlabUser gitlabUser = GitlabUtil.getInstance().getUserDetails(task.getTask().getAssignedTo(), this.session.getSettingInfo().getGitlabToken());
+        GitlabUser gitlabUser = GitlabUtil.getInstance(this.session.getSettingInfo().getGitlabUrl()).getUserDetails(task.getTask().getAssignedTo(), this.session.getSettingInfo().getGitlabToken());
         if (gitlabUser != null) {
             issueRequest.setAssigneeIds(new Long[] {gitlabUser.getId()});
         }
@@ -272,7 +283,7 @@ public class ZboxServlet extends HttpServlet {
         issueRequest.setDescription(taskDetails.getDesc());
         setIssueStatus(notify, issueRequest , zboxProject);
         String gitlabToken = this.session.getSettingInfo().getGitlabToken();
-        IssueResponse issueResponse = GitlabUtil.getInstance().createIssue(gitlabProject, issueRequest, gitlabToken);
+        IssueResponse issueResponse = GitlabUtil.getInstance(this.session.getSettingInfo().getGitlabUrl()).createIssue(gitlabProject, issueRequest, gitlabToken);
         if(issueResponse!=null){
         	 if (!foundIssueMapping) {
                  issueDao.setIssueMapping2DB(issueRequest, cacheId, gitlabProject,assignToUser, issueResponse);
@@ -284,7 +295,7 @@ public class ZboxServlet extends HttpServlet {
     }
     
     private void onBugReceive(ZboxNotify notify) {
-    	ZboxBug bug = ZboxUtil.getInstance().getBug(notify.getObjectId(), session);
+    	ZboxBug bug = ZboxUtil.getInstance(this.session.getSettingInfo().getZboxUrl()).getBug(notify.getObjectId(), session);
         IssueRequest issueRequest = new IssueRequest();
         String gitlabToken = this.session.getSettingInfo().getGitlabToken();
         //当前指派信息
@@ -292,7 +303,8 @@ public class ZboxServlet extends HttpServlet {
         ZboxBugDetails bugDetails = bug.getBug();
         String cacheId = "Bug-" + bugDetails.getId();
         String zboxProject = bug.getBug().getProjectName();
-        String gitlabProject = projectDao.findGitlabProjectByZboxProject(zboxProject);
+        //projectDao.findGitlabProjectByZboxProject(zboxProject);
+        String gitlabProject = this.session.getGitlabProjectByZboxProject(zboxProject);
         if(gitlabProject==null){
         	logger.info("ERROR：请检查禅道项目名称是否配置正确！");
         	return ;
@@ -321,7 +333,7 @@ public class ZboxServlet extends HttpServlet {
         		logger.info("onBugReceive - issueMapping : " +issue.toString());
             }
     	}
-        GitlabUser gitlabUser = GitlabUtil.getInstance().getUserDetails(bug.getBug().getAssignedTo(), gitlabToken);
+        GitlabUser gitlabUser = GitlabUtil.getInstance(this.session.getSettingInfo().getGitlabUrl()).getUserDetails(bug.getBug().getAssignedTo(), gitlabToken);
         if (gitlabUser != null) {
             issueRequest.setAssigneeIds(new Long[] {gitlabUser.getId()});
         }
@@ -332,7 +344,7 @@ public class ZboxServlet extends HttpServlet {
         //设置issue 状态 和label
         setIssueStatus(notify, issueRequest ,zboxProject);
         //IssueMappingEntity issue =  issueDao.findIssueMapping(cacheId , gitlabProject);
-        IssueResponse issueResponse = GitlabUtil.getInstance().createIssue(gitlabProject, issueRequest, gitlabToken);
+        IssueResponse issueResponse = GitlabUtil.getInstance(this.session.getSettingInfo().getGitlabUrl()).createIssue(gitlabProject, issueRequest, gitlabToken);
         if(issueResponse!=null){
         	if (!foundIssueMapping) {
                 issueDao.setIssueMapping2DB(issueRequest, cacheId, gitlabProject,assignToUser,issueResponse);
@@ -354,11 +366,12 @@ public class ZboxServlet extends HttpServlet {
         		logger.info("初次部署，请在配置界面手动填写基础配置！");
         		return true;
         	}
-        	ZboxUtil.getInstance().setAccessUrl(settingInfo.getZboxUrl());
-            GitlabUtil.getInstance().setAccessUrl(settingInfo.getGitlabUrl());
-            this.session = ZboxUtil.getInstance().getZboxSession();
+        	ZboxUtil.getInstance("").setAccessUrl(settingInfo.getZboxUrl());
+            GitlabUtil.getInstance("").setAccessUrl(settingInfo.getGitlabUrl());
+            this.session = ZboxUtil.getInstance("").getZboxSession();
             this.session.setSettingInfo(settingInfo);
-            ZboxUtil.getInstance().login(settingInfo.getZboxUser(), settingInfo.getZboxPassword() , session);
+            this.session.setProjects(projectDao.getAllProjects());
+            ZboxUtil.getInstance(this.session.getSettingInfo().getZboxUrl()).login(settingInfo.getZboxUser(), settingInfo.getZboxPassword() , session);
             if (logger.isLoggable(Level.INFO)) {
                 logger.info("登录SESSION:"+this.session.toString());
             }

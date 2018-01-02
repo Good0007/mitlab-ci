@@ -322,7 +322,7 @@
 				$("#gitlabProject").html(options);
 		  	},
 		  	error:function(){
-		  		options = "<option value=''>获取项目列表出错！</option>\n";
+		  		options = "<option value=''>获取项目列表出错，请检查基础配置是否正确！</option>\n";
 		  		$("#gitlabProject").html(options);
 		  	}
 	    });

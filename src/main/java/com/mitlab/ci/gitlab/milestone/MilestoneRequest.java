@@ -19,6 +19,9 @@ public class MilestoneRequest {
 	@JsonProperty("start_date")
 	private String startDate ;
 	
+	/**
+	 * 更新时设置该参数
+	 */
 	@JsonProperty("milestone_id")
 	private String milestoneId;
 	

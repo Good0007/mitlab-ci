@@ -3,6 +3,9 @@ package com.mitlab.ci.gitlab.milestone;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 public class MilestoneResponse{
+		/**
+		 * MilestoneId 主键 ，更新Milestone时用
+		 */
 	 	private String id;
 	 	private String iid;
 	 	@JsonProperty("project_id")

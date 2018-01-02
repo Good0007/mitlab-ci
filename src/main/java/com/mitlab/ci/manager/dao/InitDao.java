@@ -11,7 +11,8 @@ import com.mitlab.ci.zbox.ZboxException;
 public class InitDao extends BaseDao{
 	
 	 public void test(){
-		 String dropTable = "drop table t_product_plan";
+		 String t_product_plan = "drop table t_product_plan";
+		 String t_issue = "drop table t_issue";
    	  	 String createIssueTable = "create cached table if not exists t_issue("
      			+ "id varchar(32) primary key,"
      			+ "zid varchar(32), "
@@ -34,19 +35,17 @@ public class InitDao extends BaseDao{
   			+ "zbox_project_id varchar(32),"
   			+ "plan_sync varchar(2))";*/
 	    	 Connection conn = null;
-	         PreparedStatement stmt = null; 
-	         PreparedStatement stmt2 = null; 
+	         Statement stmt = null; 
 			 try {
 				 conn = h2Pool.getConnection();
-				 stmt = conn.prepareStatement(dropTable);
-				 stmt.execute();
-				 stmt2 = conn.prepareStatement(createPlanMappingTable);
-				 stmt2.execute();
+				 stmt  = conn.createStatement();
+				 stmt.addBatch(t_issue);
+				 stmt.addBatch(t_product_plan);
+				 stmt.executeBatch();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}finally {
 	            close(stmt);
-	            close(stmt2);
 	            close(conn);
 	        }
 	}

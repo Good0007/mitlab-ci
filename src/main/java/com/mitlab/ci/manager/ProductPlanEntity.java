@@ -24,12 +24,12 @@ public class ProductPlanEntity {
 	 */
 	private String gitlabProject;
 	/**
-	 * 更新时需要
+	 * 项目中的milestone 编号 不唯一
 	 */
 	private String milestoneId;
 	
 	/**
-	 * 更新时需要
+	 * 更新时需要，该字段对应IssueRequest 中的 milestoneId
 	 */
 	private String mid;
 	

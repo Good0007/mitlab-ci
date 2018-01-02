@@ -220,7 +220,7 @@ public class ZboxServlet extends HttpServlet {
     						  ProductPlanEntity planInfo = planDao.findOnePlanMapping(notify.getObjectId(), productId, project.getGitlabProject());
     						  if( planInfo!=null ){
     							 //更新
-    							  milestone.setMilestoneId(planInfo.getMilestoneId());
+    							  milestone.setMilestoneId(planInfo.getMid());
     							  //milestone.setId(planInfo.getMid());
     							  logger.info("当前产品："+entry.getKey() +" -- 为关联的项目 ["+project.getGitlabProject()+"] 更新里程碑:"+milestone.toString());
     							  logger.info("更新计划："+planInfo.toString());
@@ -323,7 +323,7 @@ public class ZboxServlet extends HttpServlet {
 			if(bug.getBug().getPlan()!=null && !"".equals(bug.getBug().getPlan())){
     			ProductPlanEntity planInfo = planDao.findOnePlanMapping(bug.getBug().getPlan(), bug.getProductID(), gitlabProject);
     			if(planInfo!=null){
-    				issueRequest.setMilestoneId(Long.valueOf(planInfo.getMilestoneId()));
+    				issueRequest.setMilestoneId(Long.valueOf(planInfo.getMid()));
     			}
     		}
 	        foundIssueMapping = true;
@@ -333,7 +333,8 @@ public class ZboxServlet extends HttpServlet {
         		logger.info("onBugReceive - issueMapping : " +issue.toString());
             }
     	}
-        GitlabUser gitlabUser = GitlabUtil.getInstance(this.session.getSettingInfo().getGitlabUrl()).getUserDetails(bug.getBug().getAssignedTo(), gitlabToken);
+        GitlabUser gitlabUser = GitlabUtil.getInstance(this.session.getSettingInfo().getGitlabUrl()).
+        		getUserDetails(bug.getBug().getAssignedTo(), gitlabToken);
         if (gitlabUser != null) {
             issueRequest.setAssigneeIds(new Long[] {gitlabUser.getId()});
         }

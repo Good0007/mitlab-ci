@@ -39,6 +39,7 @@ import com.mitlab.ci.zbox.bug.ZboxBugDetails;
 import com.mitlab.ci.zbox.product.plan.ZboxProductplanResult;
 import com.mitlab.ci.zbox.project.ZboxProductDetails;
 import com.mitlab.ci.zbox.project.ZboxProjectResult;
+import com.mitlab.ci.zbox.project.ZboxProjectsResult;
 import com.mitlab.ci.zbox.task.ZboxTask;
 import com.mitlab.ci.zbox.task.ZboxTaskDetails;
 
@@ -99,13 +100,16 @@ public class ZboxServlet extends HttpServlet {
         	logger.info(".......... Relogin Session ..........");
         	response.getWriter().print("0000");
         	return;
-        }else if("getProjects".equals(method)){
+        }else if("getZboxProjects".equals(method)){
         	//获取禅道项目列表
-        	String projectJson = ZboxUtil.getInstance(this.session.getSettingInfo().getZboxUrl()).getProjectsJson( this.session, "/project.json");
-        	response.getWriter().print(projectJson);
+        	response.setCharacterEncoding("UTF-8");
+        	ZboxProjectsResult zpr = ZboxUtil.getInstance(this.session.getSettingInfo().getZboxUrl()).getAllZboxProjects(session);
+        	String json = new ObjectMapper().writeValueAsString(zpr.getProjects());
+        	response.getWriter().print(json);
         	return;
         }else if("getGitlabProjects".equals(method)){
         	//获取Gitlab项目列表
+        	response.setCharacterEncoding("UTF-8");
         	ProjectResponse[] res = GitlabUtil.getInstance(this.session.getSettingInfo().getGitlabUrl()).
         			getAllProjects(this.session.getSettingInfo().getGitlabToken());
         	String json = new ObjectMapper().writeValueAsString(res);

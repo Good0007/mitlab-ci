@@ -10,6 +10,7 @@ import com.mitlab.ci.zbox.bug.ZboxBugResult;
 import com.mitlab.ci.zbox.product.ZboxProductResult;
 import com.mitlab.ci.zbox.product.plan.ZboxProductplanResult;
 import com.mitlab.ci.zbox.project.ZboxProjectResult;
+import com.mitlab.ci.zbox.project.ZboxProjectsResult;
 import com.mitlab.ci.zbox.task.ZboxTask;
 import com.mitlab.ci.zbox.task.ZboxTaskResult;
 
@@ -36,14 +37,15 @@ public final class ZboxUtil extends AbstractMitlabUtil {
     }
 
     public static void main(String[] args) {
-        //ZboxSession session = ZboxUtil.getInstance().getZboxSession();
-        //ZboxUtil.getInstance().login("admin", "Cwk199432", session).getIp();
+        ZboxSession session = ZboxUtil.getInstance("").getZboxSession();
+        ZboxUtil.getInstance("").login("admin", "Cwk199432", session).getIp();
+        ZboxProjectsResult zx = ZboxUtil.getInstance("").getAllZboxProjects(session);
         //ZboxProjectResult zs = ZboxUtil.getInstance().getProjectByPid("1" , session);
         //ZboxProductplanResult zs = ZboxUtil.getInstance().getProductPlan("9", session);
         //System.out.println(zs.toString());
         //System.out.println(ZboxUtil.getInstance().login("admin", "Cwk199432", session).getIp());
         //ZboxTask tas = ZboxUtil.getInstance().getTask("4", session);
-       // System.out.println(.toString());
+        System.out.println(zx.toString());
        // ZboxUtil.getInstance().logout(session);
     }
 
@@ -80,11 +82,13 @@ public final class ZboxUtil extends AbstractMitlabUtil {
         return this.proxyPost(bodyParams, urlParams, ZboxResult.class, "/user-logout.json");
     }
     
-    public String getProjectsJson(ZboxSession session , String jsonPath){
+    
+    public ZboxProjectsResult getAllZboxProjects(ZboxSession session){
     	 Map<String, Object> bodyParams = new HashMap<String, Object>();
+         bodyParams.put(session.getSessionName(), session.getSessionID());
          Map<String, Object> urlParams = new HashMap<String, Object>();
-         urlParams.put(session.getSessionName(), session.getSessionID());
-         return this.getJsonString(bodyParams, urlParams,null, jsonPath);
+         ZboxProjectsResult zpr = this.proxyPost(bodyParams, urlParams, ZboxProjectsResult.class, "/project.json");
+         return zpr;
     }
     
     /**

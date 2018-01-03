@@ -74,6 +74,7 @@ public class ZboxProjectResult extends ZboxResult{
         	        ZboxProductDetails e = new ObjectMapper().readValue(obj, ZboxProductDetails.class);
         	        map.put(key2, e);
         	      }
+            	  break;
               }
             }
         } catch (IOException e) {

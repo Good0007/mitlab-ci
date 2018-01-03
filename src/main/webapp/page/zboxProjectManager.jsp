@@ -119,10 +119,10 @@
 							<tbody>
 								<c:forEach items="${projectList}" var="obj">
 									<tr>
-										<td>
+										<td  class="ztProject">
 											${obj.zboxProjectId }
 										</td>
-										<td class="ztProject">
+										<td>
 											${obj.zboxProject }
 										</td>
 										<td>
@@ -212,19 +212,20 @@
 	function addProject(thisObj){
 		var form = $("#actionForm")[0];
 		var flag = false;
+		projectName = $("#zboxProject").find(":selected").html().trim();
+		$("#zboxProjectName").val(projectName);
 		if((form.gitlabProject.value).trim() == ""){
 			$("#alertMsg").html("请选择gitlab项目！").removeClass("alert-info").addClass("alert-danger").show(500);
 			return false;
 		}
 		$(".ztProject").each(function(index , domEle){
-			if($(domEle).html().trim() == form.zboxProject.value){
+			if($(domEle).html().trim() == form.zboxProjectId.value){
 				$("#alertMsg").html("该禅道项目已存在，请不要重复添加！").removeClass("alert-info").addClass("alert-danger").show(500);
 				flag = true;
 				return;
 			}
 		})
-		projectName = $("#zboxProject").find(":selected").html().trim();
-		$("#zboxProjectName").val(projectName);
+		
 		if(flag) return false;
 		var _url = "<%=path%>/zboxProjectManager?m=addProject";
 		var btn=$(thisObj);
@@ -275,24 +276,16 @@
 	
 	//获取zbox项目
 	function getProjects(){
-		var _url = "<%=path%>/zbox.do?m=getProjects";
+		var _url = "<%=path%>/zbox.do?m=getZboxProjects";
 		$.ajax({
 			url:_url,
 			type:"post",
 			success:function(resp){
-				resp = resp.replace(/\\"/g,"\"");
-				resp = resp.replace(/"{/g,"{");
-				resp = resp.replace(/}"/g,"}");
 				console.log(resp);
-				obj  = $.parseJSON(resp);
+				resp  = $.parseJSON(resp.replace(/\\"/g,""));
 				var options = "";
-				for (var Key in obj.data.projects){
-					project = obj.data.projects[Key];
-					if(project.indexOf("\\u")!=-1){
-						//中文转码
-						project = reconvert(project);
-					}
-					options += "<option value='"+Key+"'>"+project+"</option>\n";
+				for (var key in resp){
+					options += "<option value='"+key+"'>"+resp[key]+"</option>\n";
 			    }
 				if(options == ""){
 					options = "<option value=''>暂无项目，请登录禅道创建项目</option>\n";
@@ -359,9 +352,7 @@
 		$("#actionForm").addClass("hidden");
 	}
 	
-	
-	
-	function unicode(str){
+	/* function unicode(str){
         var value='';
         for (var i = 0; i < str.length; i++) {
             value += '\\u' + left_zero_4(parseInt(str.charCodeAt(i)).toString(16));
@@ -389,7 +380,7 @@
             return String.fromCharCode(parseInt(escape($0).replace(/(%26%23)(\d{1,6})(%3B)/g,"$2"))); 
         }); 
         return str; 
-    }
+    } */
     
     //重新登录
     function reLoginSession(msg){

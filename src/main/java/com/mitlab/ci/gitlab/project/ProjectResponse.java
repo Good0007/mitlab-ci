@@ -2,7 +2,7 @@ package com.mitlab.ci.gitlab.project;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class ProjectResoponse {
+public class ProjectResponse {
 
 	private String id;
 	private String description;

@@ -18,7 +18,7 @@ import com.mitlab.ci.gitlab.issue.IssueRequest;
 import com.mitlab.ci.gitlab.issue.IssueResponse;
 import com.mitlab.ci.gitlab.milestone.MilestoneRequest;
 import com.mitlab.ci.gitlab.milestone.MilestoneResponse;
-import com.mitlab.ci.gitlab.project.ProjectResoponse;
+import com.mitlab.ci.gitlab.project.ProjectResponse;
 import com.mitlab.ci.gitlab.user.GitlabUser;
 import com.mitlab.ci.manager.ActionMappingEntity;
 import com.mitlab.ci.manager.IssueMappingEntity;
@@ -106,7 +106,7 @@ public class ZboxServlet extends HttpServlet {
         	return;
         }else if("getGitlabProjects".equals(method)){
         	//获取Gitlab项目列表
-        	ProjectResoponse[] res = GitlabUtil.getInstance(this.session.getSettingInfo().getGitlabUrl()).
+        	ProjectResponse[] res = GitlabUtil.getInstance(this.session.getSettingInfo().getGitlabUrl()).
         			getAllProjects(this.session.getSettingInfo().getGitlabToken());
         	String json = new ObjectMapper().writeValueAsString(res);
 			response.getWriter().write(json);

@@ -61,7 +61,7 @@
 								Mitlab-Manager
 							</li>
 							<li>
-								<a href="zboxSettingManager"><i class="icon-white icon-home"></i> 基础配置</a>
+								<a href="zboxSettingManager"><i class="icon-home"></i> 基础配置</a>
 							</li>
 							<li>
 								<a href="zboxProjectManager"><i class="icon-check"></i> 项目配置</a>

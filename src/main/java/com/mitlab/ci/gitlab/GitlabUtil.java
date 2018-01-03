@@ -15,7 +15,7 @@ import com.mitlab.ci.gitlab.issue.IssueResponse;
 import com.mitlab.ci.gitlab.issue.LabelsResponse;
 import com.mitlab.ci.gitlab.milestone.MilestoneRequest;
 import com.mitlab.ci.gitlab.milestone.MilestoneResponse;
-import com.mitlab.ci.gitlab.project.ProjectResoponse;
+import com.mitlab.ci.gitlab.project.ProjectResponse;
 import com.mitlab.ci.gitlab.user.GitlabUser;
 import com.mitlab.ci.manager.dao.SettingDao;
 import com.mitlab.ci.zbox.ZboxException;
@@ -101,6 +101,13 @@ public final class GitlabUtil extends AbstractMitlabUtil {
         return null;
     }
     
+    /**
+     * 创建gitlab里程碑
+     * @param project
+     * @param milestone
+     * @param accessToken
+     * @return 
+     */
     public MilestoneResponse createMilestone(String project, MilestoneRequest milestone, String accessToken){
     	ObjectMapper om = GitlabUtil.newObjectMapper();
         Map<String, Object> bodyParams = new HashMap<String, Object>();
@@ -157,13 +164,13 @@ public final class GitlabUtil extends AbstractMitlabUtil {
      * @param accessToken
      * @return
      */
-    public ProjectResoponse[] getAllProjects( String accessToken){
+    public ProjectResponse[] getAllProjects( String accessToken){
     	Map<String, Object> headers = new HashMap<String, Object>();
         headers.put("PRIVATE-TOKEN", accessToken);
         headers.put("Content-Type", "application/json");
         headers.put("Method", "GET");
         StringBuilder relativePath = new StringBuilder("/api/v4/projects");
-        return this.proxyPost(null,null, headers, ProjectResoponse[].class, relativePath.toString());
+        return this.proxyPost(null,null, headers, ProjectResponse[].class, relativePath.toString());
     }
 
 }

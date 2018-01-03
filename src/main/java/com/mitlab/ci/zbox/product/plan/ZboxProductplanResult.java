@@ -2,9 +2,9 @@ package com.mitlab.ci.zbox.product.plan;
 
 import java.io.IOException;
 
+import com.mitlab.ci.AbstractMitlabUtil;
 import com.mitlab.ci.zbox.ZboxException;
 import com.mitlab.ci.zbox.ZboxResult;
-import com.mitlab.ci.zbox.ZboxUtil;
 
 public class ZboxProductplanResult extends ZboxResult{
 
@@ -34,7 +34,7 @@ public class ZboxProductplanResult extends ZboxResult{
 	
 	protected void transData2Producplan(String data) {
         try {
-            this.setPlan(ZboxUtil.getInstance("").newObjectMapper().readValue(data, ZboxProductplan.class));
+			this.setPlan(AbstractMitlabUtil.newObjectMapper().readValue(data, ZboxProductplan.class));
         } catch (IOException e) {
             throw new ZboxException(e.getMessage(), e);
         }

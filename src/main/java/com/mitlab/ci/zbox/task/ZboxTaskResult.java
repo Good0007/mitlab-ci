@@ -1,10 +1,10 @@
 package com.mitlab.ci.zbox.task;
 
+import java.io.IOException;
+
+import com.mitlab.ci.AbstractMitlabUtil;
 import com.mitlab.ci.zbox.ZboxException;
 import com.mitlab.ci.zbox.ZboxResult;
-import com.mitlab.ci.zbox.ZboxUtil;
-
-import java.io.IOException;
 
 public class ZboxTaskResult extends ZboxResult {
     private String data;
@@ -38,7 +38,7 @@ public class ZboxTaskResult extends ZboxResult {
 
     protected void transData2Task(String data) {
         try {
-            this.setTask(ZboxUtil.getInstance("").newObjectMapper().readValue(data, ZboxTask.class));
+			this.setTask(AbstractMitlabUtil.newObjectMapper().readValue(data, ZboxTask.class));
         } catch (IOException e) {
             throw new ZboxException(e.getMessage(), e);
         }

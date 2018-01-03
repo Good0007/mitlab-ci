@@ -2,6 +2,8 @@ package com.mitlab.ci.zbox;
 
 import java.io.IOException;
 
+import com.mitlab.ci.AbstractMitlabUtil;
+
 public class ZboxSessionResult extends ZboxResult {
 
     private String data;
@@ -35,7 +37,7 @@ public class ZboxSessionResult extends ZboxResult {
 
     protected void transData2Session(String data) {
         try {
-            this.setSession(ZboxUtil.getInstance("").newObjectMapper().readValue(data, ZboxSession.class));
+			this.setSession(AbstractMitlabUtil.newObjectMapper().readValue(data, ZboxSession.class));
         } catch (IOException e) {
             throw new ZboxException(e.getMessage(), e);
         }

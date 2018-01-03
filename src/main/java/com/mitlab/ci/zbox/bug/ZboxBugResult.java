@@ -2,9 +2,9 @@ package com.mitlab.ci.zbox.bug;
 
 import java.io.IOException;
 
+import com.mitlab.ci.AbstractMitlabUtil;
 import com.mitlab.ci.zbox.ZboxException;
 import com.mitlab.ci.zbox.ZboxResult;
-import com.mitlab.ci.zbox.ZboxUtil;
 
 public class ZboxBugResult extends ZboxResult {
     private String data;
@@ -38,7 +38,7 @@ public class ZboxBugResult extends ZboxResult {
 
     protected void transData2Bug(String data) {
         try {
-            this.setBug(ZboxUtil.getInstance("").newObjectMapper().readValue(data, ZboxBug.class));
+			this.setBug(AbstractMitlabUtil.newObjectMapper().readValue(data, ZboxBug.class));
         } catch (IOException e) {
             throw new ZboxException(e.getMessage(), e);
         }

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import com.mitlab.ci.AbstractMitlabUtil;
 import com.mitlab.ci.zbox.ZboxException;

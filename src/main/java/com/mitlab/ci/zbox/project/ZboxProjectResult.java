@@ -9,9 +9,9 @@ import java.util.Map.Entry;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import com.mitlab.ci.AbstractMitlabUtil;
 import com.mitlab.ci.zbox.ZboxException;
 import com.mitlab.ci.zbox.ZboxResult;
-import com.mitlab.ci.zbox.ZboxUtil;
 
 public class ZboxProjectResult extends ZboxResult{
 
@@ -54,12 +54,11 @@ public class ZboxProjectResult extends ZboxResult{
 		this.products = products;
 	}
 
-	@SuppressWarnings("static-access")
 	protected void transData2Project(String data) {
 		 Map<String, ZboxProductDetails> map = new HashMap<String, ZboxProductDetails>();
         try {
-            this.setProject(ZboxUtil.getInstance("").newObjectMapper().readValue(data, ZboxProject.class));
-            JsonNode jsonNode =  ZboxUtil.getInstance("").newObjectMapper().readTree(data);
+			this.setProject(AbstractMitlabUtil.newObjectMapper().readValue(data, ZboxProject.class));
+			JsonNode jsonNode =  AbstractMitlabUtil.newObjectMapper().readTree(data);
             Iterator<Entry<String, JsonNode>> elements = jsonNode.getFields();
             while (elements.hasNext()) {
               Entry<String, JsonNode> node = elements.next();

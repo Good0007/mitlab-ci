@@ -13,7 +13,7 @@ public class InitDao extends BaseDao{
 	 public void test(){
 		 String t_product_plan = "drop table t_product_plan";
 		 String t_issue = "drop table t_issue";
-   	  	 String createIssueTable = "create cached table if not exists t_issue("
+   	  	/* String createIssueTable = "create cached table if not exists t_issue("
      			+ "id varchar(32) primary key,"
      			+ "zid varchar(32), "
      			+ "gid varchar(32), "
@@ -27,7 +27,7 @@ public class InitDao extends BaseDao{
      			+ "gitlab_project varchar(128),"
      			+ "plan_id varchar(32),"
      			+ "milestone_id varchar(32),"
-     			+ "mid varchar(32) )";
+     			+ "mid varchar(32) )";*/
    	  /*String  createProjectMappingTable = "create cached table if not exists t_project("
   			+ "pid varchar(32) primary key, "
   			+ "zbox_project varchar(128), "

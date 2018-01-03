@@ -2,9 +2,9 @@ package com.mitlab.ci.zbox.product;
 
 import java.io.IOException;
 
+import com.mitlab.ci.AbstractMitlabUtil;
 import com.mitlab.ci.zbox.ZboxException;
 import com.mitlab.ci.zbox.ZboxResult;
-import com.mitlab.ci.zbox.ZboxUtil;
 
 public class ZboxProductResult extends ZboxResult{
 
@@ -40,7 +40,7 @@ public class ZboxProductResult extends ZboxResult{
 
 	protected void transData2Product(String data) {
         try {
-            this.setProduct(ZboxUtil.getInstance("").newObjectMapper().readValue(data, ZboxProduct.class));
+			this.setProduct(AbstractMitlabUtil.newObjectMapper().readValue(data, ZboxProduct.class));
         } catch (IOException e) {
             throw new ZboxException(e.getMessage(), e);
         }
